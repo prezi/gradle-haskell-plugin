@@ -1,0 +1,31 @@
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+
+apply plugin: 'scala'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+def scalaVersion = "2.11.5"
+
+group = 'com.prezi.haskell'
+version = '0.1'
+
+dependencies {
+	compile gradleApi()
+    compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
+    compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
+	compile group: "commons-io", name: "commons-io", version: "2.4"
+}
+
+tasks.withType(ScalaCompile) {
+    scalaCompileOptions.useAnt = false
+    scalaCompileOptions.additionalParameters = ["-unchecked", "-deprecation", "-feature", "-Xfatal-warnings"]
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.3'
+}
