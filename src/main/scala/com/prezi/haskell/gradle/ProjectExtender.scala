@@ -23,6 +23,11 @@ trait ProjectExtender {
     configs.addAll(configurations.map(configs.create).asJavaCollection)
   }
 
+  def getConfiguration(name: String): Configuration = {
+    val configs = project.getConfigurations
+    configs.findByName(name)
+  }
+
   def addField[T](name: String, value: T): Unit = {
     project.getExtensions.add(name, value)
   }

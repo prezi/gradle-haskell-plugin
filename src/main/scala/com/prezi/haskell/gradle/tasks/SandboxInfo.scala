@@ -11,7 +11,6 @@ class SandboxInfo extends DefaultTask {
 
   @TaskAction
   def run(): Unit = {
-
     val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
 
     println(s"Project ${getProject.getName} GHC sandbox info")

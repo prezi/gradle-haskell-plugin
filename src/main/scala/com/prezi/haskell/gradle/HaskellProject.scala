@@ -5,6 +5,8 @@ import java.io.File
 import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.Project
+import org.gradle.api.internal.file.FileResolver
+import org.gradle.internal.reflect.Instantiator
 
 /**
  * Main entry point of the haskell plugin,
@@ -12,16 +14,24 @@ import org.gradle.api.Project
  * Extends a gradle project with fields, configurations and tasks
  * @param project The project the plugin is applied on
  */
-class HaskellProject(protected val project: Project) extends HaskellProjectImpl with ProjectExtender {
+class HaskellProject(
+    protected val project: Project,
+    protected val instantiator: Instantiator,
+    protected val fileResolver: FileResolver)
+  extends HaskellProjectImpl with ProjectExtender {
   // Integrating haskell support to project
   addFields
   addConfigurations
   addSandFix
   addSandboxTasks
+  addSourceSets
 }
 
 trait HaskellProjectImpl {
   this : ProjectExtender =>
+
+  protected def instantiator: Instantiator
+  protected def fileResolver: FileResolver
 
   val sandbox = new Sandbox(new File(project.getBuildDir, "sandbox"))
 
@@ -47,6 +57,10 @@ trait HaskellProjectImpl {
   }
 
   protected def addSandboxTasks(): Unit = {
-    new SandboxSupport(project, sandbox)
+    new SandboxSupport(project)
+  }
+
+  protected def addSourceSets(): Unit = {
+    new HaskellCompilationSupport(project, instantiator, fileResolver)
   }
 }

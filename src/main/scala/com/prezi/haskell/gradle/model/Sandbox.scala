@@ -16,6 +16,7 @@ class Sandbox(val root: File) {
   val installPrefix = new File(root, "files")
 
   def asPackageDbArg: String = s"--package-db=$packageDb"
+  def asPrefixArg: String = s"--prefix=$installPrefix"
 
   override def toString = root.getAbsolutePath
 }

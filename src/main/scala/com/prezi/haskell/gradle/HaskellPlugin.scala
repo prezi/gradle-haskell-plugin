@@ -1,11 +1,17 @@
 
 package com.prezi.haskell.gradle
 
-import org.gradle.api.{Plugin, Project}
+import javax.inject.Inject
 
-class HaskellPlugin() extends Plugin[Project] {
+import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.plugins.BasePlugin
+import org.gradle.api.{Plugin, Project}
+import org.gradle.internal.reflect.Instantiator
+
+class HaskellPlugin @Inject() (instantiator: Instantiator, fileResolver: FileResolver) extends Plugin[Project] {
   override def apply(project: Project): Unit = {
-    project.getPlugins.apply("base")
-    new HaskellProject(project)
+    project.getPlugins.apply(classOf[BasePlugin])
+
+    new HaskellProject(project, instantiator, fileResolver)
   }
 }

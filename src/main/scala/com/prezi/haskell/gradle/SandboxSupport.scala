@@ -1,7 +1,6 @@
 package com.prezi.haskell.gradle
 
 import com.prezi.haskell.gradle.external.HaskellTools
-import com.prezi.haskell.gradle.model.Sandbox
 import com.prezi.haskell.gradle.tasks._
 import org.gradle.api.Project
 
@@ -9,9 +8,8 @@ import org.gradle.api.Project
  * Adds sandbox support for a project
  *
  * @param project The project the plugin is applied to
- * @param sandbox The project's custom sandbox
  */
-class SandboxSupport(protected val project: Project, sandbox: Sandbox) extends SandboxSupportImpl with ProjectExtender {
+class SandboxSupport(protected val project: Project) extends SandboxSupportImpl with ProjectExtender {
 
   addSandboxInfoTask
   addSandboxDirectoriesTask
