@@ -14,10 +14,10 @@ import scala.collection.JavaConverters._
 /**
  * Executes cabal install with the proper sandbox chaining
  */
-class BuildTask extends DefaultTask {
+class CompileTask extends DefaultTask {
   var configuration: Option[Configuration] = None
   var tools: Option[HaskellTools] = None
-  val buildDir = new File(getProject.getBuildDir, "dist")
+  val buildDir = new File(getProject.getProjectDir, "dist")
 
   dependsOn("sandbox")
   dependsOn("fixDependentSandboxes")
@@ -44,6 +44,6 @@ class BuildTask extends DefaultTask {
 
     val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
 
-    tools.get.cabalInstall(getProject.getProjectDir, buildDir, sandbox, deps)
+    tools.get.cabalInstall(getProject.getProjectDir, sandbox, deps)
   }
 }

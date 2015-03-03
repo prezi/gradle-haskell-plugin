@@ -5,6 +5,6 @@ import org.gradle.api.tasks.bundling.Zip
 
 class ZippedSandbox extends Zip {
 
-    getDependsOn.addAll(getProject.getTasksByName("build", false))
+    getDependsOn.addAll(getProject.getTasksByName("compileMain", false))
     from(getProject.getExtensions.getByType(classOf[Sandbox]).root)
 }

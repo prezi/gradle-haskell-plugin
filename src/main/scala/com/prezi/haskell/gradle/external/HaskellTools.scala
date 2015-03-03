@@ -12,29 +12,28 @@ import org.gradle.process.{ExecResult, ExecSpec}
  * @param executor The `project.exec` function
  */
 class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
-  def cabalInstall(root: File, buildDir: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
+  def cabalInstall(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
     exec(Some(root),
       "cabal", "install"
+      :: "-j"
       :: "--package-db=clear"
       :: "--package-db=global"
       :: dependencies.map(_.asPackageDbArg)
       ::: List(targetSandbox.asPackageDbArg,
-               targetSandbox.asPrefixArg,
-               s"--builddir=${buildDir.getAbsolutePath}")
+               targetSandbox.asPrefixArg)
       : _*)
   }
 
-  def cabalTest(root: File, buildDir: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
+  def cabalTest(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
     exec(Some(root),
       "cabal", "configure"
         :: "--package-db=clear"
         :: "--package-db=global"
         :: dependencies.map(_.asPackageDbArg)
         ::: List(targetSandbox.asPackageDbArg,
-        targetSandbox.asPrefixArg,
-        s"--builddir=${buildDir.getAbsolutePath}")
+        targetSandbox.asPrefixArg)
         : _*)
-    exec(Some(root), "cabal", "test", s"--builddir=${buildDir.getAbsolutePath}")
+    exec(Some(root), "cabal", "test")
   }
 
   def runHaskell(source: File, args: String*): Unit =

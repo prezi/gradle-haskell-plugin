@@ -1,12 +1,11 @@
 package com.prezi.haskell.gradle.tasks
 
-import java.io.File
-
 import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
+
 import scala.collection.JavaConverters._
 
 /**
@@ -33,6 +32,6 @@ class TestTask extends DefaultTask {
 
     val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
 
-    tools.get.cabalTest(getProject.getProjectDir, new File(getProject.getBuildDir, "dist"), sandbox, deps)
+    tools.get.cabalTest(getProject.getProjectDir, sandbox, deps)
   }
 }

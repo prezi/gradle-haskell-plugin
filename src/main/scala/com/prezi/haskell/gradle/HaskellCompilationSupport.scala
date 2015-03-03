@@ -1,19 +1,22 @@
 package com.prezi.haskell.gradle
 
+import java.io.File
+
 import com.prezi.haskell.gradle.extension.HaskellExtension
 import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.DefaultHaskellSourceSet
-import com.prezi.haskell.gradle.tasks.{TestTask, BuildTask}
-import org.gradle.api.{DefaultTask, Task, Project}
+import com.prezi.haskell.gradle.tasks.{CompileTask, TestTask}
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.tasks.Delete
+import org.gradle.api.{DefaultTask, Project}
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.language.base.ProjectSourceSet
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 
-import scala.collection._
 import scala.collection.JavaConverters._
 
 /**
- * Adds source sets and build tasks to a project
+ * Adds source sets and compile tasks to a project
  * @param project The project the plugin is applied to
  * @param instantiator Gradle object instantiator
  * @param fileResolver File resolver, needed for the source sets
@@ -26,8 +29,9 @@ class HaskellCompilationSupport(
 
   registerExtension
   addSourceSets
-  addBuildTasks
+  addCompileTasks
   addTestTasks
+  extendCleanTask
 }
 
 trait HaskellCompilationSupportImpl {
@@ -62,41 +66,41 @@ trait HaskellCompilationSupportImpl {
     testSources.add(testSourceSet)
   }
 
-  protected def addBuildTasks(): Unit = {
-    val buildTasks = mutable.Set[Task]()
-
+  protected def addCompileTasks(): Unit = {
     for (conf <- project.getConfigurations.asScala) {
       val sourceSet = projectSourceSet.findByName(conf.getName)
+      val assembleTask = project.getTasks.getByPath(LifecycleBasePlugin.ASSEMBLE_TASK_NAME)
 
       if (sourceSet != null) {
         if (conf.getName == Names.mainConfiguration) {
-          val buildConfTask = project.getTasks.create("build" + conf.getName.capitalize, classOf[BuildTask])
-          buildConfTask.attachToSourceSet(sourceSet)
+          val compileConfTask = project.getTasks.create("compile" + conf.getName.capitalize, classOf[CompileTask])
+          compileConfTask.attachToSourceSet(sourceSet)
 
-          buildConfTask.configuration = Some(conf)
-          buildConfTask.tools = tools
+          compileConfTask.configuration = Some(conf)
+          compileConfTask.tools = tools
 
-          buildTasks.add(buildConfTask)
+          assembleTask.dependsOn(compileConfTask)
         } else {
-          val buildAliasTask = project.getTasks.create("build" + conf.getName.capitalize, classOf[DefaultTask])
+          val compileAliasTask = project.getTasks.create("compile" + conf.getName.capitalize, classOf[DefaultTask])
 
-          buildAliasTask.dependsOn("buildMain")
-          buildAliasTask.dependsOn(conf)
+          compileAliasTask.dependsOn("compileMain")
+          compileAliasTask.dependsOn(conf)
 
-          buildTasks.add(buildAliasTask)
+          assembleTask.dependsOn(compileAliasTask)
         }
       }
     }
 
     if (project.getTasks.findByName("build") == null) {
       val buildTask = project.getTasks.create("build", classOf[DefaultTask])
-      buildTask.getDependsOn.addAll(buildTasks.asJavaCollection)
+      buildTask.dependsOn(LifecycleBasePlugin.ASSEMBLE_TASK_NAME)
+      buildTask.dependsOn("check")
     }
   }
 
   protected def addTestTasks(): Unit = {
     val testTask = project.getTasks.create("test", classOf[TestTask])
-    testTask.dependsOn("buildTest")
+    testTask.dependsOn("compileTest")
     testTask.tools = tools
     testTask.configuration = Some(project.getConfigurations.getByName(Names.testConfiguration))
 
@@ -105,6 +109,11 @@ trait HaskellCompilationSupportImpl {
       val checkTask = project.getTasks.create("check", classOf[DefaultTask])
       checkTask.getDependsOn.add(testTask)
     }
+  }
+
+  protected def extendCleanTask(): Unit = {
+    val cleanTask = project.getTasks.getByName(LifecycleBasePlugin.CLEAN_TASK_NAME).asInstanceOf[Delete]
+    cleanTask.delete(new File(project.getProjectDir, "dist"))
   }
 
   private lazy val projectSourceSet: ProjectSourceSet =
