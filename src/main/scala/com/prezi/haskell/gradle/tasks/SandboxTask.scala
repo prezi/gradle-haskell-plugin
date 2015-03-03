@@ -15,7 +15,6 @@ class SandboxTask extends DefaultTask {
   var tools: Option[HaskellTools] = None
 
   dependsOn("sandboxDirectories")
-  getOutputs.file(new File(sandbox.packageDb, "package.cache"))
 
   @TaskAction
   def run(): Unit = {
@@ -23,6 +22,8 @@ class SandboxTask extends DefaultTask {
       throw new IllegalStateException("tools is not specified")
     }
 
-    tools.get.ghcPkgRecache(sandbox)
+    if (!new File(sandbox.packageDb, "package.cache").exists()) {
+      tools.get.ghcPkgRecache(sandbox)
+    }
   }
 }
