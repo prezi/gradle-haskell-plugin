@@ -7,18 +7,14 @@ import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
-
 import scala.collection.JavaConverters._
 
 /**
- * Executes cabal install with the proper sandbox chaining
+ * Executes cabal test with the proper sandbox chaining
  */
-class BuildTask extends DefaultTask {
+class TestTask extends DefaultTask {
   var configuration: Option[Configuration] = None
   var tools: Option[HaskellTools] = None
-
-  dependsOn("sandbox")
-  dependsOn("fixDependentSandboxes")
 
   @TaskAction
   def run(): Unit = {
@@ -37,6 +33,6 @@ class BuildTask extends DefaultTask {
 
     val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
 
-    tools.get.cabalInstall(getProject.getProjectDir, new File(getProject.getBuildDir, "dist"), sandbox, deps)
+    tools.get.cabalTest(getProject.getProjectDir, new File(getProject.getBuildDir, "dist"), sandbox, deps)
   }
 }

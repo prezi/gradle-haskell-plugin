@@ -3,7 +3,7 @@ package com.prezi.haskell.gradle
 import com.prezi.haskell.gradle.extension.HaskellExtension
 import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.DefaultHaskellSourceSet
-import com.prezi.haskell.gradle.tasks.BuildTask
+import com.prezi.haskell.gradle.tasks.{TestTask, BuildTask}
 import org.gradle.api.{DefaultTask, Task, Project}
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator
@@ -27,6 +27,7 @@ class HaskellCompilationSupport(
   registerExtension
   addSourceSets
   addBuildTasks
+  addTestTasks
 }
 
 trait HaskellCompilationSupportImpl {
@@ -40,11 +41,6 @@ trait HaskellCompilationSupportImpl {
   }
 
   protected def addSourceSets(): Unit = {
-    val projectSourceSet = getProjectSourceSet()
-
-    val mainConfig = getConfiguration(Names.mainConfiguration)
-    val testConfig = getConfiguration(Names.testConfiguration)
-
     val mainSources = projectSourceSet.maybeCreate("main")
     val testSources = projectSourceSet.maybeCreate("test")
 
@@ -67,8 +63,6 @@ trait HaskellCompilationSupportImpl {
   }
 
   protected def addBuildTasks(): Unit = {
-    val projectSourceSet = getProjectSourceSet()
-
     val buildTasks = mutable.Set[Task]()
 
     for (conf <- project.getConfigurations.asScala) {
@@ -79,18 +73,33 @@ trait HaskellCompilationSupportImpl {
         buildConfTask.getDependsOn.add(sourceSet)
 
         buildConfTask.configuration = Some(conf)
-        buildConfTask.tools = Some(getField[HaskellTools]("haskellTools"))
+        buildConfTask.tools = tools
 
         buildTasks.add(buildConfTask)
       }
     }
 
-    val buildTask = project.getTasks.create("build", classOf[DefaultTask])
-    buildTask.getDependsOn.addAll(buildTasks.asJavaCollection)
+    if (project.getTasks.findByName("build") == null) {
+      val buildTask = project.getTasks.create("build", classOf[DefaultTask])
+      buildTask.getDependsOn.addAll(buildTasks.asJavaCollection)
+    }
   }
 
-  private def getProjectSourceSet(): ProjectSourceSet = {
-    val ext = project.getExtensions.getByType(classOf[HaskellExtension])
-    ext.getSources
+  protected def addTestTasks(): Unit = {
+    val testTask = project.getTasks.create("test", classOf[TestTask])
+    testTask.dependsOn("buildTest")
+    testTask.tools = tools
+    testTask.configuration = Some(project.getConfigurations.getByName(Names.testConfiguration))
+
+    // The default `check` task just calls the `test` task
+    if (project.getTasks.findByName("check") == null) {
+      val checkTask = project.getTasks.create("check", classOf[DefaultTask])
+      checkTask.getDependsOn.add(testTask)
+    }
   }
+
+  private lazy val projectSourceSet: ProjectSourceSet =
+    project.getExtensions.getByType(classOf[HaskellExtension]).getSources
+
+  private lazy val tools: Option[HaskellTools] = Some(getField[HaskellTools]("haskellTools"))
 }
