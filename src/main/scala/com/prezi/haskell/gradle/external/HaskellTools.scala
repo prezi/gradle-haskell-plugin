@@ -15,7 +15,6 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
   def cabalInstall(root: File, buildDir: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
     exec(Some(root),
       "cabal", "install"
-      :: "-j"
       :: "--package-db=clear"
       :: "--package-db=global"
       :: dependencies.map(_.asPackageDbArg)
