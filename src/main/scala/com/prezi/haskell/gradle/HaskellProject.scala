@@ -24,7 +24,8 @@ class HaskellProject(
   addConfigurations
   addSandFix
   addSandboxTasks
-  addSourceSets
+  addCompilation
+  addArtifacts
 }
 
 trait HaskellProjectImpl {
@@ -60,7 +61,11 @@ trait HaskellProjectImpl {
     new SandboxSupport(project)
   }
 
-  protected def addSourceSets(): Unit = {
+  protected def addCompilation(): Unit = {
     new HaskellCompilationSupport(project, instantiator, fileResolver)
+  }
+  
+  protected def addArtifacts(): Unit = {
+    new ZippedSandboxArtifactSupport(project)
   }
 }
