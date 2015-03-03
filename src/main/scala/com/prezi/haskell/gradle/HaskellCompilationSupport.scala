@@ -69,13 +69,22 @@ trait HaskellCompilationSupportImpl {
       val sourceSet = projectSourceSet.findByName(conf.getName)
 
       if (sourceSet != null) {
-        val buildConfTask = project.getTasks.create("build" + conf.getName.capitalize, classOf[BuildTask])
-        buildConfTask.getDependsOn.add(sourceSet)
+        if (conf.getName == Names.mainConfiguration) {
+          val buildConfTask = project.getTasks.create("build" + conf.getName.capitalize, classOf[BuildTask])
+          buildConfTask.attachToSourceSet(sourceSet)
 
-        buildConfTask.configuration = Some(conf)
-        buildConfTask.tools = tools
+          buildConfTask.configuration = Some(conf)
+          buildConfTask.tools = tools
 
-        buildTasks.add(buildConfTask)
+          buildTasks.add(buildConfTask)
+        } else {
+          val buildAliasTask = project.getTasks.create("build" + conf.getName.capitalize, classOf[DefaultTask])
+
+          buildAliasTask.dependsOn("buildMain")
+          buildAliasTask.dependsOn(conf)
+
+          buildTasks.add(buildAliasTask)
+        }
       }
     }
 

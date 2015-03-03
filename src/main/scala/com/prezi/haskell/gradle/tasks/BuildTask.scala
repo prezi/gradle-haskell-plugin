@@ -7,6 +7,7 @@ import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
+import org.gradle.language.base.FunctionalSourceSet
 
 import scala.collection.JavaConverters._
 
@@ -16,9 +17,15 @@ import scala.collection.JavaConverters._
 class BuildTask extends DefaultTask {
   var configuration: Option[Configuration] = None
   var tools: Option[HaskellTools] = None
+  val buildDir = new File(getProject.getBuildDir, "dist")
 
   dependsOn("sandbox")
   dependsOn("fixDependentSandboxes")
+
+  def attachToSourceSet(sourceSet: FunctionalSourceSet) = {
+    getDependsOn.add(sourceSet)
+    getOutputs.dir(getProject.getExtensions.getByType(classOf[Sandbox]).root)
+  }
 
   @TaskAction
   def run(): Unit = {
@@ -37,6 +44,6 @@ class BuildTask extends DefaultTask {
 
     val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
 
-    tools.get.cabalInstall(getProject.getProjectDir, new File(getProject.getBuildDir, "dist"), sandbox, deps)
+    tools.get.cabalInstall(getProject.getProjectDir, buildDir, sandbox, deps)
   }
 }
