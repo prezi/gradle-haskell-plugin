@@ -56,7 +56,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     val dbArgs = others.map(child => child.asPackageDbArg)
 
     tools.get.runHaskell(
-      finalSandFixPath </> "src/SandFix.hs",
+      finalSandFixPath </> "SandFix.hs",
       List( sandbox.root.getAbsolutePath,
         "packages",
         "--package-db=global")

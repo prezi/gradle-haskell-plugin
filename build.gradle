@@ -2,6 +2,10 @@
 repositories {
     mavenLocal()
     mavenCentral()
+
+	maven {
+		url "http://dl.bintray.com/scalaz/releases"
+	}
 }
 
 
@@ -18,7 +22,12 @@ dependencies {
 	compile gradleApi()
     compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
     compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
+	compile group: "com.jsuereth", name: "scala-arm_2.11", version: "1.4"
 	compile group: "commons-io", name: "commons-io", version: "2.4"
+
+	testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
+	testCompile group: "org.specs2", name: "specs2-core_2.11", version: "3.0"
+	testCompile group: "org.specs2", name: "specs2-junit_2.11", version: "3.0"
 }
 
 tasks.withType(ScalaCompile) {

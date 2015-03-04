@@ -1,18 +1,34 @@
 package com.prezi.haskell.gradle.tasks
 
-import java.io.File
+import java.io._
 
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.tasks.Copy
+import com.prezi.haskell.gradle.ApiHelper._
+import org.apache.commons.io.IOUtils
+
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
+
+import resource._
 
 /**
  * Extracts the SandFix from the downloaded source artifact
  */
-class CopySandFix extends Copy {
+class CopySandFix extends DefaultTask {
 
-  def setUp(sandFixConfig: Configuration, sandFixDir: File): Unit = {
-    getInputs files sandFixConfig
-    into(sandFixDir)
-    from(getProject().tarTree(sandFixConfig.getSingleFile))
+  var sandFixDir: Option[File] = None
+
+  @TaskAction
+  def run(): Unit = {
+    if (!sandFixDir.isDefined) {
+      throw new IllegalStateException("sandFixDir is not specified")
+    }
+
+    sandFixDir.get.mkdirs()
+    val sourceUrl = getClass.getClassLoader.getResource("com/prezi/haskell/gradle/tasks/SandFix.hs")
+
+    for (src <- managed(sourceUrl.openStream());
+         dest <- managed(new FileOutputStream(sandFixDir.get </> "SandFix.hs"))) {
+      IOUtils.copy(src, dest)
+    }
   }
 }
