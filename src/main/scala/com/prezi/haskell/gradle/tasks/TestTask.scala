@@ -1,37 +1,18 @@
 package com.prezi.haskell.gradle.tasks
 
-import com.prezi.haskell.gradle.external.HaskellTools
-import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
-
-import scala.collection.JavaConverters._
 
 /**
  * Executes cabal test with the proper sandbox chaining
  */
-class TestTask extends DefaultTask {
-  var configuration: Option[Configuration] = None
-  var tools: Option[HaskellTools] = None
+class TestTask extends DefaultTask with HaskellProjectSupport with HaskellDependencies with UsingHaskellTools {
 
   @TaskAction
   def run(): Unit = {
-    if (!configuration.isDefined) {
-      throw new IllegalStateException("configuration is not specified")
-    }
+    needsConfigurationSet
+    needsToolsSet
 
-    if (!tools.isDefined) {
-      throw new IllegalStateException("tools is not specified")
-    }
-
-    val deps = configuration.get.getResolvedConfiguration.getResolvedArtifacts
-      .asScala
-      .map(Sandbox.fromResolvedArtifact(getProject, _))
-      .toList
-
-    val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
-
-    tools.get.cabalTest(getProject.getProjectDir, sandbox, deps)
+    tools.get.cabalTest(getProject.getProjectDir, sandbox, dependentSandboxes)
   }
 }

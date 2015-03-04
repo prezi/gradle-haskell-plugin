@@ -1,5 +1,7 @@
 package com.prezi.haskell.gradle
 
+import java.io.File
+
 import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.internal.reflect.Instantiator
@@ -25,10 +27,18 @@ object ApiHelper {
       }
     }
 
-  implicit def instantiatorExt(instantiator: Instantiator) = new {
+  implicit def instantiatorExt(instantiator: Instantiator) =
+    new InstantiatorExt(instantiator)
 
+  class InstantiatorExt(instantiator: Instantiator) {
     def create[T](params: Object*)(implicit t: ClassTag[T]): T = {
       instantiator.newInstance[T](t.runtimeClass.asInstanceOf[Class[T]], params : _*)
     }
+  }
+
+  implicit def fileExt(file: File): FileExt = new FileExt(file)
+
+  class FileExt(file: File) {
+    def </> (subPath: String): File = new File(file, subPath)
   }
 }

@@ -1,7 +1,5 @@
 package com.prezi.haskell.gradle.extension.impl
 
-import java.io.File
-
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.{HaskellExtension, ProjectExtender}
@@ -16,7 +14,6 @@ import org.gradle.language.base.ProjectSourceSet
 import org.gradle.language.base.plugins.LifecycleBasePlugin.{ASSEMBLE_TASK_NAME, CLEAN_TASK_NAME}
 
 import scala.collection.JavaConverters._
-import scala.language.reflectiveCalls
 
 trait HaskellCompilationSupportImpl {
    this : ProjectExtender =>
@@ -86,7 +83,7 @@ trait HaskellCompilationSupportImpl {
      val testTask = createTask[TestTask]("test")
      testTask.dependsOn("compileTest")
      testTask.tools = tools
-     testTask.configuration = Some(project.getConfigurations.getByName(Names.testConfiguration))
+     testTask.configuration = Some(getConfiguration(Names.testConfiguration))
 
      // The default `check` task just calls the `test` task
      if (!isTaskDefined("check")) {
@@ -97,7 +94,7 @@ trait HaskellCompilationSupportImpl {
 
    protected def extendCleanTask(): Unit = {
      val cleanTask = getTask[Delete](CLEAN_TASK_NAME)
-     cleanTask.delete(new File(project.getProjectDir, "dist"))
+     cleanTask.delete(project.getProjectDir </> "dist")
    }
 
    private lazy val projectSourceSet: ProjectSourceSet = getField[HaskellExtension]("haskell").getSources

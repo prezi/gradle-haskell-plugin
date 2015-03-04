@@ -2,6 +2,7 @@ package com.prezi.haskell.gradle.extension.impl
 
 import java.io.File
 
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.ProjectExtender
 import com.prezi.haskell.gradle.external.HaskellTools
@@ -13,7 +14,7 @@ trait SandFixSupportImpl {
    this : ProjectExtender =>
 
    protected val sandFixConfig = addConfiguration
-   private val sandFixDir = new File(project.getBuildDir, "sandfix")
+   private val sandFixDir = project.getBuildDir </> "sandfix"
 
    private def addConfiguration(): Configuration = {
      val sandfixConfig = addConfiguration(Names.sandFixConfiguration)

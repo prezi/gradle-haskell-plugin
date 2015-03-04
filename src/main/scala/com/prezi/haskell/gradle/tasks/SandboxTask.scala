@@ -1,7 +1,6 @@
 package com.prezi.haskell.gradle.tasks
 
-import java.io.File
-
+import com.prezi.haskell.gradle.ApiHelper._
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
@@ -15,7 +14,7 @@ class SandboxTask extends DefaultTask with HaskellProjectSupport with UsingHaske
   def run(): Unit = {
     needsToolsSet
 
-    if (!new File(sandbox.packageDb, "package.cache").exists()) {
+    if (!(sandbox.packageDb </> "package.cache").exists()) {
       tools.get.ghcPkgRecache(sandbox)
     }
   }

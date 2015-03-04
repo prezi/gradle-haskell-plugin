@@ -2,10 +2,10 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 
-import com.prezi.haskell.gradle.external.HaskellTools
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.{Configuration, ResolvedArtifact, ResolvedDependency}
+import org.gradle.api.artifacts.{ResolvedArtifact, ResolvedDependency}
 import org.gradle.api.tasks.TaskAction
 
 import scala.collection.JavaConverters._
@@ -30,7 +30,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     }
   }
 
-  private def finalSandFixPath = sandFixPath.getOrElse(new File(getProject.getBuildDir, "sandfix/sandfix-1.1"))
+  private def finalSandFixPath = sandFixPath.getOrElse(getProject.getBuildDir </> "sandfix/sandfix-1.1")
 
   private def fixDependency(dep: ResolvedDependency): Set[Sandbox] = {
     val childSandboxes =
@@ -56,7 +56,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     val dbArgs = others.map(child => child.asPackageDbArg)
 
     tools.get.runHaskell(
-      new File(finalSandFixPath, "src/SandFix.hs"),
+      finalSandFixPath </> "src/SandFix.hs",
       List( sandbox.root.getAbsolutePath,
         "packages",
         "--package-db=global")

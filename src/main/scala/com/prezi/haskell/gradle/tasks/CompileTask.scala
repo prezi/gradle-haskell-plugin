@@ -1,7 +1,6 @@
 package com.prezi.haskell.gradle.tasks
 
-import java.io.File
-
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -11,7 +10,7 @@ import org.gradle.language.base.FunctionalSourceSet
  * Executes cabal install with the proper sandbox chaining
  */
 class CompileTask extends DefaultTask with HaskellProjectSupport with HaskellDependencies with UsingHaskellTools {
-  val buildDir = new File(getProject.getProjectDir, "dist")
+  val buildDir = getProject.getProjectDir </> "dist"
 
   dependsOn("sandbox")
   dependsOn("fixDependentSandboxes")
