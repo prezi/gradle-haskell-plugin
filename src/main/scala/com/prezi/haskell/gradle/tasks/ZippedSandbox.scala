@@ -1,10 +1,12 @@
 package com.prezi.haskell.gradle.tasks
 
-import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.tasks.bundling.Zip
 
-class ZippedSandbox extends Zip {
+/**
+ * Zips the projects sandbox to create its main artifact
+ */
+class ZippedSandbox extends Zip with HaskellProjectSupport {
 
     getDependsOn.addAll(getProject.getTasksByName("compileMain", false))
-    from(getProject.getExtensions.getByType(classOf[Sandbox]).root)
+    from(sandbox.root)
 }

@@ -2,21 +2,15 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 
-import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
 import org.gradle.language.base.FunctionalSourceSet
-
-import scala.collection.JavaConverters._
 
 /**
  * Executes cabal install with the proper sandbox chaining
  */
-class CompileTask extends DefaultTask {
-  var configuration: Option[Configuration] = None
-  var tools: Option[HaskellTools] = None
+class CompileTask extends DefaultTask with HaskellProjectSupport with HaskellDependencies with UsingHaskellTools {
   val buildDir = new File(getProject.getProjectDir, "dist")
 
   dependsOn("sandbox")
@@ -29,21 +23,9 @@ class CompileTask extends DefaultTask {
 
   @TaskAction
   def run(): Unit = {
-    if (!configuration.isDefined) {
-      throw new IllegalStateException("configuration is not specified")
-    }
+    needsConfigurationSet
+    needsToolsSet
 
-    if (!tools.isDefined) {
-      throw new IllegalStateException("tools is not specified")
-    }
-
-    val deps = configuration.get.getResolvedConfiguration.getResolvedArtifacts
-      .asScala
-      .map(Sandbox.fromResolvedArtifact(getProject, _))
-      .toList
-
-    val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
-
-    tools.get.cabalInstall(getProject.getProjectDir, sandbox, deps)
+    tools.get.cabalInstall(getProject.getProjectDir, sandbox, dependentSandboxes)
   }
 }

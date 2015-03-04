@@ -6,14 +6,14 @@ import java.nio.file.Files
 
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
 
-import scala.collection.JavaConverters._
+/**
+ * Generates the ghc-mod.cradle file containing all the package databases ghc-mod needs to
+ * work on the given project.
+ */
+class GenerateGhcModCradle extends DefaultTask with HaskellProjectSupport with HaskellDependencies {
 
-class GenerateGhcModCradle extends DefaultTask {
-
-  var configuration: Option[Configuration] = None
   private var targetFile_ : Option[File] = None
 
   def targetFile = targetFile_
@@ -27,22 +27,13 @@ class GenerateGhcModCradle extends DefaultTask {
 
   @TaskAction
   def run(): Unit = {
-    if (!configuration.isDefined) {
-      throw new IllegalStateException("configuration is not specified")
-    }
+    needsConfigurationSet
 
     if (!targetFile.isDefined) {
       throw new IllegalStateException("targetFile is not specified")
     }
 
-    val deps = configuration.get.getResolvedConfiguration.getResolvedArtifacts
-      .asScala
-      .map(Sandbox.fromResolvedArtifact(getProject, _))
-      .toList
-
-    val sandbox = getProject.getExtensions.getByType(classOf[Sandbox])
-
-    val cradleFile = generateContent(deps ::: List(sandbox))
+    val cradleFile = generateContent(dependentSandboxes ::: List(sandbox))
     Files.write(targetFile.get.toPath, cradleFile.getBytes(StandardCharsets.UTF_8))
   }
 

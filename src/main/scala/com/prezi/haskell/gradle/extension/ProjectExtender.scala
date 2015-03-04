@@ -1,8 +1,10 @@
-package com.prezi.haskell.gradle
+package com.prezi.haskell.gradle.extension
 
-import org.gradle.api.Project
+import org.gradle.api.{Task, Project}
 import org.gradle.api.artifacts.Configuration
+
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
 /**
  * Helper functions for extending a project with new fields, configurations, etc.
@@ -34,5 +36,21 @@ trait ProjectExtender {
 
   def getField[T](name: String): T = {
     project.getExtensions.getByName(name).asInstanceOf[T]
+  }
+
+  def createTask[T <: Task](name: String)(implicit t: ClassTag[T]): T = {
+    project.getTasks.create(name, t.runtimeClass.asInstanceOf[Class[T]])
+  }
+
+  def getTask[T <: Task](name: String): T = {
+    project.getTasks.getByName(name).asInstanceOf[T]
+  }
+
+  def isTaskDefined(name: String): Boolean = {
+    project.getTasks.findByName(name) != null
+  }
+
+  def createField[T](name: String, params: Object*)(implicit t: ClassTag[T]): Unit = {
+    project.getExtensions.create(name, t.runtimeClass.asInstanceOf[Class[T]], params : _*)
   }
 }

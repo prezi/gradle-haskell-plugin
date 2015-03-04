@@ -14,23 +14,16 @@ import scala.collection.immutable.Set
 /**
  * Applies SandFix on all the extracted dependent sandboxes
  */
-class FixDependentSandboxes extends DefaultTask {
+class FixDependentSandboxes extends DefaultTask with HaskellDependencies with UsingHaskellTools {
   dependsOn("extractDependentSandboxes")
   dependsOn("copySandFix")
-
-  var configuration: Option[Configuration] = None
-  var tools: Option[HaskellTools] = None
 
   var sandFixPath: Option[File] = None
 
   @TaskAction
   def run(): Unit = {
-    if (!configuration.isDefined) {
-      throw new IllegalStateException("configuration is not specified")
-    }
-    if (!tools.isDefined) {
-      throw new IllegalStateException("tools is not defined")
-    }
+    needsConfigurationSet
+    needsToolsSet
 
     for (dep <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) {
       fixDependency(dep)
@@ -68,6 +61,5 @@ class FixDependentSandboxes extends DefaultTask {
         "packages",
         "--package-db=global")
         ::: dbArgs.toList : _*)
-
   }
 }

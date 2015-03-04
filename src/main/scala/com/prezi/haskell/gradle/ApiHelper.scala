@@ -2,8 +2,10 @@ package com.prezi.haskell.gradle
 
 import groovy.lang.Closure
 import org.gradle.api.Action
+import org.gradle.internal.reflect.Instantiator
 
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 
 /**
  * Helper functions for better interop with Gradle and/or Groovy
@@ -22,4 +24,11 @@ object ApiHelper {
         null
       }
     }
+
+  implicit def instantiatorExt(instantiator: Instantiator) = new {
+
+    def create[T](params: Object*)(implicit t: ClassTag[T]): T = {
+      instantiator.newInstance[T](t.runtimeClass.asInstanceOf[Class[T]], params : _*)
+    }
+  }
 }
