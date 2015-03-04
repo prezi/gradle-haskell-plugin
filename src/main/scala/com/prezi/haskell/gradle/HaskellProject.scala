@@ -26,6 +26,7 @@ class HaskellProject(
   addSandboxTasks
   addCompilation
   addArtifacts
+  addGhcModSupport
 }
 
 trait HaskellProjectImpl {
@@ -67,5 +68,9 @@ trait HaskellProjectImpl {
   
   protected def addArtifacts(): Unit = {
     new ZippedSandboxArtifactSupport(project)
+  }
+
+  protected def addGhcModSupport(): Unit = {
+    new GhcModSupport(project)
   }
 }
