@@ -1,3 +1,13 @@
+buildscript {
+	repositories {
+		maven { url "http://dl.bintray.com/releashaus/release" }
+		maven { url "https://oss.sonatype.org/content/groups/public" }
+	}
+
+	dependencies {
+		classpath 'org.scoverage:gradle-scoverage:1.0.8'
+	}
+}
 
 repositories {
     mavenLocal()
@@ -8,10 +18,10 @@ repositories {
 	}
 }
 
-
 apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'maven'
+apply plugin: org.scoverage.ScoveragePlugin
 
 def scalaVersion = "2.11.5"
 
@@ -27,12 +37,20 @@ dependencies {
 
 	testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
 	testCompile group: "org.specs2", name: "specs2-core_2.11", version: "3.0"
+	testCompile group: "org.specs2", name: "specs2-mock_2.11", version: "3.0"
 	testCompile group: "org.specs2", name: "specs2-junit_2.11", version: "3.0"
+
+	scoverage 'org.scoverage:scalac-scoverage-plugin_2.11:1.0.4'
+	scoverage 'org.scoverage:scalac-scoverage-runtime_2.11:1.0.4'
 }
 
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.useAnt = false
     scalaCompileOptions.additionalParameters = ["-unchecked", "-deprecation", "-feature", "-Xfatal-warnings"]
+}
+
+checkScoverage {
+	// minimumLineRate = 0.9
 }
 
 task wrapper(type: Wrapper) {
