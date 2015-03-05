@@ -10,8 +10,8 @@ buildscript {
 }
 
 repositories {
-    mavenLocal()
-    mavenCentral()
+	mavenLocal()
+	mavenCentral()
 
 	maven {
 		url "http://dl.bintray.com/scalaz/releases"
@@ -30,8 +30,8 @@ version = '0.1'
 
 dependencies {
 	compile gradleApi()
-    compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
-    compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
+	compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
+	compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
 	compile group: "com.jsuereth", name: "scala-arm_2.11", version: "1.4"
 	compile group: "commons-io", name: "commons-io", version: "2.4"
 
@@ -45,8 +45,8 @@ dependencies {
 }
 
 tasks.withType(ScalaCompile) {
-    scalaCompileOptions.useAnt = false
-    scalaCompileOptions.additionalParameters = ["-unchecked", "-deprecation", "-feature", "-Xfatal-warnings"]
+	scalaCompileOptions.useAnt = false
+	scalaCompileOptions.additionalParameters = ["-unchecked", "-deprecation", "-feature", "-Xfatal-warnings"]
 }
 
 checkScoverage {
