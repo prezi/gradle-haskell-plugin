@@ -34,10 +34,10 @@ trait HaskellCompilationSupportImpl {
      val testSourceSet = instantiator.create[DefaultHaskellSourceSet]("haskell", testSources, fileResolver)
 
      mainSourceSet.getSource.srcDir("src/main/haskell")
-     mainSourceSet.getSource.include("*.hs")
+     mainSourceSet.getSource.include("**/*.hs")
 
      testSourceSet.getSource.srcDir("src/test/haskell")
-     testSourceSet.getSource.include("*.hs")
+     testSourceSet.getSource.include("**/*.hs")
 
      cabalSourceSet.getSource.srcDir(".")
      cabalSourceSet.getSource.include("*.cabal")
