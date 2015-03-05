@@ -53,6 +53,51 @@ checkScoverage {
 	// minimumLineRate = 0.9
 }
 
+uploadArchives {
+	repositories {
+		repositories {
+			mavenDeployer {
+				pom.project {
+					url "http://github.com/prezi/gradle-haskell-plugin"
+					name project.name
+					description project.description
+
+					scm {
+						url "http://github.com/prezi/gradle-haskell-plugin"
+						connection "scm:git@github.com:prezi/gradle-haskell-plugin.git"
+						developerConnection "scm:git@github.com:prezi/gradle-haskell-plugin.git"
+					}
+
+					licenses {
+						license {
+							name "The Apache Software License, Version 2.0"
+							url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+							distribution "repo"
+						}
+					}
+
+					developers {
+						developer {
+							id "vigoo"
+							name "Daniel Vigovszky"
+						}
+					}
+				}
+
+				def user = project.getProperty("nexusUser")
+				def password = project.getProperty("nexusPassword")
+
+				repository(url: "https://artifactory.prezi.com/plugins-release-local/") {
+					authentication(userName: user, password: password)
+				}
+				snapshotRepository(url: "https://artifactory.prezi.com/plugins-snapshot-local/") {
+					authentication(userName: user, password: password)
+				}
+			}
+		}
+	}
+}
+
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.2.1'
 }
