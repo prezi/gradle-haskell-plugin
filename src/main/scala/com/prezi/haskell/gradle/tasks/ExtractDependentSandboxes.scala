@@ -10,6 +10,30 @@ import org.gradle.api.tasks.TaskAction
 import scala.collection.JavaConverters._
 
 /**
+ * Configures the @ExtractDependentSandboxes task's inputs and outputs
+ */
+class ConfigureExtractDependentSandboxes extends DefaultTask with HaskellDependencies {
+
+  var extractTask: Option[ExtractDependentSandboxes] = None
+
+  @TaskAction
+  def run(): Unit = {
+    needsConfigurationSet
+
+    if (!extractTask.isDefined) {
+      throw new IllegalStateException("extractTask is not set")
+    }
+
+    for (artifact <- configuration.get.getResolvedConfiguration.getResolvedArtifacts.asScala) {
+      val sandbox = Sandbox.fromResolvedArtifact(getProject, artifact)
+
+      extractTask.get.getInputs.file(artifact.getFile)
+      extractTask.get.getOutputs.dir(sandbox.root)
+    }
+  }
+}
+
+/**
  * Extracts a project's dependencies as custom sandboxes
  */
 class ExtractDependentSandboxes extends DefaultTask with HaskellDependencies {
@@ -25,13 +49,16 @@ class ExtractDependentSandboxes extends DefaultTask with HaskellDependencies {
     for (artifact <- configuration.get.getResolvedConfiguration.getResolvedArtifacts.asScala) {
       val sandbox = Sandbox.fromResolvedArtifact(getProject, artifact)
 
-      getLogger.trace("Extracting sandbox dependency {}", artifact.getFile.getName)
+      getLogger.info("Extracting sandbox dependency {}", artifact.getFile.getName)
 
       sandbox.root.mkdirs()
       getProject.copy(asClosure { spec : CopySpec =>
         spec.from (getProject.zipTree(artifact.getFile))
         spec.into (sandbox.root)
       })
+
+      // Mark as dirty for SandFix
+      (sandbox.root </> "fixed").delete()
     }
   }
 }

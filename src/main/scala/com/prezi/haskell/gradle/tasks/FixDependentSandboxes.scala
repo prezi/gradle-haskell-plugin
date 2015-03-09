@@ -43,10 +43,15 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
       yield Sandbox.fromResolvedArtifact(getProject, artifact)
 
     for (sandbox <- sandboxes) {
-      getLogger.info("Fixing sandbox at {}", sandbox)
+      if (isSandboxDirty(sandbox)) {
+        getLogger.info("Fixing sandbox at {}", sandbox)
 
-      runSandFix(sandbox, childSandboxes.toList)
-      tools.get.ghcPkgRecache(sandbox)
+        runSandFix(sandbox, childSandboxes.toList)
+        tools.get.ghcPkgRecache(sandbox)
+        (sandbox.root </> "fixed").createNewFile()
+      } else {
+        getLogger.info("Sandbox at {} is not dirty, no need to fix", sandbox)
+      }
     }
 
     sandboxes
@@ -62,4 +67,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
         "--package-db=global")
         ::: dbArgs.toList : _*)
   }
+
+  private def isSandboxDirty(sandbox: Sandbox): Boolean =
+    !(sandbox.root </> "fixed").exists()
 }
