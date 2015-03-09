@@ -27,6 +27,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
   def cabalTest(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
     exec(Some(root),
       "cabal", "configure"
+        :: "--enable-tests"
         :: "--package-db=clear"
         :: "--package-db=global"
         :: dependencies.map(_.asPackageDbArg)
