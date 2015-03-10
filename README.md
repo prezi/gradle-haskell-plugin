@@ -29,7 +29,7 @@ dependencies {
 
 ```
 
-## Additional sources
+## Additional options
 It is possible to change the _source set_ used to determine the up-to-date status of the compilation task.
 See the following example:
 
@@ -46,6 +46,15 @@ haskell {
 ```
 
 **NOTE** This only affects _gradle_'s up-to-date checks. You still have to add the source directories to your _cabal file_ too.
+
+### Profiling
+_Profiling_ is enabled by default. To turn it off, change the `profiling` property of the `haskell` extension:
+
+```groovy
+haskell {
+    profiling = false
+}
+```
 
 ## Details
 Applying the plugin adds the following to the project:

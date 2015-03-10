@@ -39,6 +39,6 @@ class CompileTask extends DefaultTask with HaskellProjectSupport with HaskellDep
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalInstall(getProject.getProjectDir, sandbox, dependentSandboxes)
+    tools.get.cabalInstall(getProject.getProjectDir, sandbox, dependentSandboxes, haskellExtension.getProfiling)
   }
 }

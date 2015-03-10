@@ -12,7 +12,7 @@ import org.gradle.process.{ExecResult, ExecSpec}
  * @param executor The `project.exec` function
  */
 class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
-  def cabalInstall(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
+  def cabalInstall(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox], profiling: Boolean): Unit = {
     exec(Some(root),
       "cabal", "install"
       :: "-j"
@@ -21,10 +21,11 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       :: dependencies.map(_.asPackageDbArg)
       ::: List(targetSandbox.asPackageDbArg,
                targetSandbox.asPrefixArg)
+      ::: profilingArgs(profiling)
       : _*)
   }
 
-  def cabalTest(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox]): Unit = {
+  def cabalTest(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox], profiling: Boolean): Unit = {
     exec(Some(root),
       "cabal", "configure"
         :: "--enable-tests"
@@ -32,7 +33,8 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
         :: "--package-db=global"
         :: dependencies.map(_.asPackageDbArg)
         ::: List(targetSandbox.asPackageDbArg,
-        targetSandbox.asPrefixArg)
+                 targetSandbox.asPrefixArg)
+        ::: profilingArgs(profiling)
         : _*)
     exec(Some(root), "cabal", "test")
   }
@@ -54,5 +56,13 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
         spec.workingDir(workDir.get)
       }
     }))
+  }
+
+  private def profilingArgs(profiling: Boolean): List[String] = {
+    if (profiling) {
+      List("--enable-executable-profiling", "--enable-library-profiling")
+    } else {
+      List()
+    }
   }
 }

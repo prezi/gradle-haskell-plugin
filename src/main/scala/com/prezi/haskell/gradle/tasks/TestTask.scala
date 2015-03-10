@@ -13,6 +13,6 @@ class TestTask extends DefaultTask with HaskellProjectSupport with HaskellDepend
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalTest(getProject.getProjectDir, sandbox, dependentSandboxes)
+    tools.get.cabalTest(getProject.getProjectDir, sandbox, dependentSandboxes, haskellExtension.getProfiling)
   }
 }
