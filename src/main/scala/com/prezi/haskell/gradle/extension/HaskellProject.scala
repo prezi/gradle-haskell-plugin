@@ -19,8 +19,8 @@ class HaskellProject(
   // Integrating haskell support to project
   addFields
   addConfigurations
-  addSandFix
   addSandboxTasks
+  addSandFix
   addCompilation
   addArtifacts
   addGhcModSupport

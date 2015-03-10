@@ -13,6 +13,7 @@ import org.gradle.api.artifacts.ResolvedArtifact
  */
 class Sandbox(val root: File) {
 
+  val extractionRoot = new File(root.getAbsolutePath + ".tmp")
   val packageDb = root </> "packages"
   val installPrefix = root </> "files"
 

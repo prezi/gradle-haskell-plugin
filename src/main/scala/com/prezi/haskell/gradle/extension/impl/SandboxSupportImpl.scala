@@ -28,7 +28,7 @@ trait SandboxSupportImpl {
    }
 
    protected def addExtractDependentSandboxesTask(): Unit = {
-     val configTask = createTask[ConfigureExtractDependentSandboxes]("configureExtractDependentSandboxes")
+     val configTask = createTask[ConfigureSandboxTasks]("configureSandboxes")
      configTask.configuration = Some(getConfiguration(Names.mainConfiguration))
 
      val task = createTask[ExtractDependentSandboxes]("extractDependentSandboxes")

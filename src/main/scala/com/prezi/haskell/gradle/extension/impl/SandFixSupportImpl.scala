@@ -4,7 +4,7 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.ProjectExtender
 import com.prezi.haskell.gradle.external.HaskellTools
-import com.prezi.haskell.gradle.tasks.{CopySandFix, FixDependentSandboxes}
+import com.prezi.haskell.gradle.tasks.{ConfigureSandboxTasks, CopySandFix, FixDependentSandboxes}
 
 trait SandFixSupportImpl {
    this : ProjectExtender =>
@@ -21,5 +21,9 @@ trait SandFixSupportImpl {
      task.configuration = Some(getConfiguration(Names.mainConfiguration))
      task.tools = Some(getField[HaskellTools]("haskellTools"))
      task.sandFixPath = Some(sandFixDir)
+
+     val configTask = getTask[ConfigureSandboxTasks]("configureSandboxes")
+     configTask.fixTask = Some(task)
+     task.getDependsOn.add(configTask)
    }
  }

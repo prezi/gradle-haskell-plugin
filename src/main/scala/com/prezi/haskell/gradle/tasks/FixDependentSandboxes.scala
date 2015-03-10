@@ -6,6 +6,7 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{ResolvedArtifact, ResolvedDependency}
+import org.gradle.api.file.CopySpec
 import org.gradle.api.tasks.TaskAction
 
 import scala.collection.JavaConverters._
@@ -43,15 +44,17 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
       yield Sandbox.fromResolvedArtifact(getProject, artifact)
 
     for (sandbox <- sandboxes) {
-      if (isSandboxDirty(sandbox)) {
-        getLogger.info("Fixing sandbox at {}", sandbox)
 
-        runSandFix(sandbox, childSandboxes.toList)
-        tools.get.ghcPkgRecache(sandbox)
-        (sandbox.root </> "fixed").createNewFile()
-      } else {
-        getLogger.info("Sandbox at {} is not dirty, no need to fix", sandbox)
-      }
+      getLogger.info("Fixing sandbox at {}", sandbox)
+
+      sandbox.root.mkdirs()
+      getProject.copy(asClosure { spec : CopySpec =>
+        spec.from (sandbox.extractionRoot)
+        spec.into (sandbox.root)
+      })
+
+      runSandFix(sandbox, childSandboxes.toList)
+      tools.get.ghcPkgRecache(sandbox)
     }
 
     sandboxes
@@ -67,7 +70,4 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
         "--package-db=global")
         ::: dbArgs.toList : _*)
   }
-
-  private def isSandboxDirty(sandbox: Sandbox): Boolean =
-    !(sandbox.root </> "fixed").exists()
 }
