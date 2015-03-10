@@ -22,7 +22,7 @@ trait HaskellCompilationSupportImpl {
    protected def fileResolver: FileResolver
 
    protected def registerExtension(): Unit = {
-     createField[HaskellExtension]("haskell", instantiator)
+     createField[HaskellExtension]("haskell", instantiator, project)
    }
 
    protected def addSourceSets(): Unit = {
