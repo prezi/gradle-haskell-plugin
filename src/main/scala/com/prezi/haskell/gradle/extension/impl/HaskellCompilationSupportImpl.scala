@@ -80,15 +80,22 @@ trait HaskellCompilationSupportImpl {
    }
 
    protected def addTestTasks(): Unit = {
-     val testTask = createTask[TestTask]("test")
-     testTask.dependsOn("compileTest")
-     testTask.tools = tools
-     testTask.configuration = Some(getConfiguration(Names.testConfiguration))
+     val testHaskellTask = createTask[TestTask]("testHaskell")
+     testHaskellTask.dependsOn("compileTest")
+     testHaskellTask.tools = tools
+     testHaskellTask.configuration = Some(getConfiguration(Names.testConfiguration))
+
+     if (!isTaskDefined("test")) {
+       val testTask = createTask[DefaultTask]("test")
+       testTask.dependsOn(testHaskellTask)
+     } else {
+       getTask[Task]("test").dependsOn(testHaskellTask)
+     }
 
      // The default `check` task just calls the `test` task
      if (!isTaskDefined("check")) {
        val checkTask = createTask[DefaultTask]("check")
-       checkTask.getDependsOn.add(testTask)
+       checkTask.getDependsOn.add(testHaskellTask)
      }
    }
 
