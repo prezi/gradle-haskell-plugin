@@ -60,7 +60,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
   private def profilingArgs(profiling: Boolean): List[String] = {
     if (profiling) {
-      List("--enable-executable-profiling", "--enable-library-profiling")
+      List("--enable-profiling", "--enable-library-profiling")
     } else {
       List()
     }
