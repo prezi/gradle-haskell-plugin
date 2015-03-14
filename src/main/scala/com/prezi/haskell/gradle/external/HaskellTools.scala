@@ -3,6 +3,7 @@ package com.prezi.haskell.gradle.external
 import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
+import com.prezi.haskell.gradle.external.HaskellTools.CabalContext
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.Action
 import org.gradle.process.{ExecResult, ExecSpec}
@@ -12,31 +13,32 @@ import org.gradle.process.{ExecResult, ExecSpec}
  * @param executor The `project.exec` function
  */
 class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
-  def cabalInstall(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox], profiling: Boolean): Unit = {
-    exec(Some(root),
+
+  def cabalInstall(ctx: CabalContext): Unit = {
+    exec(Some(ctx.root),
       "cabal", "install"
       :: "-j"
       :: "--package-db=clear"
       :: "--package-db=global"
-      :: dependencies.map(_.asPackageDbArg)
-      ::: List(targetSandbox.asPackageDbArg,
-               targetSandbox.asPrefixArg)
-      ::: profilingArgs(profiling)
+      :: ctx.dependencies.map(_.asPackageDbArg)
+      ::: List(ctx.targetSandbox.asPackageDbArg,
+               ctx.targetSandbox.asPrefixArg)
+      ::: profilingArgs(ctx.profiling)
       : _*)
   }
 
-  def cabalTest(root: File, targetSandbox: Sandbox, dependencies: List[Sandbox], profiling: Boolean): Unit = {
-    exec(Some(root),
+  def cabalTest(ctx: CabalContext): Unit = {
+    exec(Some(ctx.root),
       "cabal", "configure"
         :: "--enable-tests"
         :: "--package-db=clear"
         :: "--package-db=global"
-        :: dependencies.map(_.asPackageDbArg)
-        ::: List(targetSandbox.asPackageDbArg,
-                 targetSandbox.asPrefixArg)
-        ::: profilingArgs(profiling)
+        :: ctx.dependencies.map(_.asPackageDbArg)
+        ::: List(ctx.targetSandbox.asPackageDbArg,
+                 ctx.targetSandbox.asPrefixArg)
+        ::: profilingArgs(ctx.profiling)
         : _*)
-    exec(Some(root), "cabal", "test")
+    exec(Some(ctx.root), "cabal", "test")
   }
 
   def runHaskell(source: File, args: String*): Unit =
@@ -65,4 +67,13 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       List()
     }
   }
+}
+
+object HaskellTools {
+  case class CabalContext(
+    root: File,
+    targetSandbox: Sandbox,
+    dependencies: List[Sandbox],
+    profiling: Boolean
+  )
 }

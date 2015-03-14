@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 /**
  * Executes cabal install with the proper sandbox chaining
  */
-class CompileTask extends DefaultTask with HaskellProjectSupport with HaskellDependencies with UsingHaskellTools {
+class CompileTask extends CabalExecTask {
   val buildDir = getProject.getProjectDir </> "dist"
 
   dependsOn("sandbox")
@@ -39,6 +39,6 @@ class CompileTask extends DefaultTask with HaskellProjectSupport with HaskellDep
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalInstall(getProject.getProjectDir, sandbox, dependentSandboxes, haskellExtension.getProfiling)
+    tools.get.cabalInstall(cabalContext())
   }
 }
