@@ -5,6 +5,7 @@ import java.io.File
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.HaskellTools.CabalContext
 import com.prezi.haskell.gradle.model.Sandbox
+import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.process.{ExecResult, ExecSpec}
 
@@ -16,6 +17,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
   def cabalInstall(ctx: CabalContext): Unit = {
     exec(Some(ctx.root),
+      None,
       "cabal",
       configFileArgs(ctx.configFile)
       ::: "install"
@@ -31,6 +33,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
   def cabalTest(ctx: CabalContext): Unit = {
     exec(Some(ctx.root),
+      None,
       "cabal",
       configFileArgs(ctx.configFile)
       ::: "configure"
@@ -42,21 +45,23 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
                ctx.targetSandbox.asPrefixArg)
       ::: profilingArgs(ctx.profiling)
       : _*)
-    exec(Some(ctx.root), "cabal", "test")
+    exec(Some(ctx.root),None,  "cabal", "test")
   }
 
   def runHaskell(source: File, args: String*): Unit =
-    exec(None, "runhaskell", source.getAbsolutePath +: args : _*)
+    exec(None, None, "runhaskell", source.getAbsolutePath +: args : _*)
 
   def ghcPkgRecache(sandbox: Sandbox): Unit =
-    exec(None, "ghc-pkg", "-f", sandbox.packageDb.getAbsolutePath, "recache")
+    exec(None, None, "ghc-pkg", "-f", sandbox.packageDb.getAbsolutePath, "recache")
 
   def ghcPkgList(sandboxes: List[Sandbox]): Unit =
-    exec(None, "ghc-pkg", "list" :: sandboxes.map(_.asPackageDbArg) : _*)
+    exec(None, None, "ghc-pkg", "list" :: sandboxes.map(_.asPackageDbArg) : _*)
 
-  private def exec(workDir: Option[File], program: String, args: String*): Unit = {
+  private def exec(workDir: Option[File], envConfigurer: Option[Closure[Map[String, Object]]], program: String, args: String*): Unit = {
     executor(asAction({ spec: ExecSpec =>
       spec.commandLine(program +: args.toSeq : _*)
+
+      envConfigurer map { ec => ec.call(spec.getEnvironment()) }
 
       if (workDir.isDefined) {
         spec.workingDir(workDir.get)
