@@ -16,7 +16,9 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
   def cabalInstall(ctx: CabalContext): Unit = {
     exec(Some(ctx.root),
-      "cabal", "install"
+      "cabal",
+      configFileArgs(ctx.configFile)
+      ::: "install"
       :: "-j"
       :: "--package-db=clear"
       :: "--package-db=global"
@@ -29,15 +31,17 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
   def cabalTest(ctx: CabalContext): Unit = {
     exec(Some(ctx.root),
-      "cabal", "configure"
-        :: "--enable-tests"
-        :: "--package-db=clear"
-        :: "--package-db=global"
-        :: ctx.dependencies.map(_.asPackageDbArg)
-        ::: List(ctx.targetSandbox.asPackageDbArg,
-                 ctx.targetSandbox.asPrefixArg)
-        ::: profilingArgs(ctx.profiling)
-        : _*)
+      "cabal",
+      configFileArgs(ctx.configFile)
+      ::: "configure"
+      :: "--enable-tests"
+      :: "--package-db=clear"
+      :: "--package-db=global"
+      :: ctx.dependencies.map(_.asPackageDbArg)
+      ::: List(ctx.targetSandbox.asPackageDbArg,
+               ctx.targetSandbox.asPrefixArg)
+      ::: profilingArgs(ctx.profiling)
+      : _*)
     exec(Some(ctx.root), "cabal", "test")
   }
 
@@ -67,6 +71,12 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       List()
     }
   }
+
+  private def configFileArgs(configFile: Option[String]): List[String] =
+    configFile match {
+      case Some(cf) => List("--config-file", cf)
+      case None => Nil
+    }
 }
 
 object HaskellTools {
@@ -74,6 +84,7 @@ object HaskellTools {
     root: File,
     targetSandbox: Sandbox,
     dependencies: List[Sandbox],
-    profiling: Boolean
+    profiling: Boolean,
+    configFile: Option[String]
   )
 }
