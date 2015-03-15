@@ -12,6 +12,7 @@ trait CabalExecTask extends DefaultTask with HaskellProjectSupport with HaskellD
     sandbox,
     dependentSandboxes,
     haskellExtension.getProfiling,
-    haskellExtension.getConfigFile
+    haskellExtension.getCabalConfigFile,
+    haskellExtension.getEnvConfigurer
   )
 }

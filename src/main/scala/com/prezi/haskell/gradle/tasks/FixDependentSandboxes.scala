@@ -15,7 +15,7 @@ import scala.collection.immutable.Set
 /**
  * Applies SandFix on all the extracted dependent sandboxes
  */
-class FixDependentSandboxes extends DefaultTask with HaskellDependencies with UsingHaskellTools {
+class FixDependentSandboxes extends DefaultTask with HaskellDependencies with UsingHaskellTools with HaskellProjectSupport {
   dependsOn("extractDependentSandboxes")
   dependsOn("copySandFix")
 
@@ -54,7 +54,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
       })
 
       runSandFix(sandbox, childSandboxes.toList)
-      tools.get.ghcPkgRecache(sandbox)
+      tools.get.ghcPkgRecache(haskellExtension.getEnvConfigurer, sandbox)
     }
 
     sandboxes
@@ -64,6 +64,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     val dbArgs = others.map(child => child.asPackageDbArg)
 
     tools.get.runHaskell(
+      haskellExtension.getEnvConfigurer,
       finalSandFixPath </> "SandFix.hs",
       List( sandbox.root.getAbsolutePath,
         "packages",

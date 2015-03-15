@@ -14,6 +14,6 @@ class SandboxPackages extends DefaultTask with HaskellProjectSupport with Haskel
      needsToolsSet
      needsConfigurationSet
 
-     tools.get.ghcPkgList(dependentSandboxes.+:(sandbox))
+     tools.get.ghcPkgList(haskellExtension.getEnvConfigurer, dependentSandboxes.+:(sandbox))
    }
  }

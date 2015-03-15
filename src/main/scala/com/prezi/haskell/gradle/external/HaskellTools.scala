@@ -1,9 +1,10 @@
 package com.prezi.haskell.gradle.external
 
 import java.io.File
+import java.util
 
 import com.prezi.haskell.gradle.ApiHelper._
-import com.prezi.haskell.gradle.external.HaskellTools.CabalContext
+import com.prezi.haskell.gradle.external.HaskellTools.{CabalContext, OptEnvConfigurer}
 import com.prezi.haskell.gradle.model.Sandbox
 import groovy.lang.Closure
 import org.gradle.api.Action
@@ -18,7 +19,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
   def cabalInstall(ctx: CabalContext): Unit = {
     exec(
       Some(ctx.root),
-      None,
+      ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
       ::: "install"
@@ -35,7 +36,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
   def cabalTest(ctx: CabalContext): Unit = {
     exec(
       Some(ctx.root),
-      None,
+      ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
       ::: "configure"
@@ -50,37 +51,47 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
     exec(
       Some(ctx.root),
-      None,
+      ctx.envConfigurer,
       "cabal",
-      "test")
+      configFileArgs(ctx.configFile)
+      :+ "test"
+      : _*)
   }
 
-  def runHaskell(source: File, args: String*): Unit =
+  def runHaskell(envConfigurer: OptEnvConfigurer, source: File, args: String*): Unit =
     exec(
       None,
-      None,
+      envConfigurer,
       "runhaskell",
       source.getAbsolutePath +: args : _*)
 
-  def ghcPkgRecache(sandbox: Sandbox): Unit =
+  def ghcPkgRecache(envConfigurer: OptEnvConfigurer, sandbox: Sandbox): Unit =
     exec(
       None,
-      None,
+      envConfigurer,
       "ghc-pkg",
       "-f",
       sandbox.packageDb.getAbsolutePath,
       "recache")
 
-  def ghcPkgList(sandboxes: List[Sandbox]): Unit =
+  def ghcPkgList(envConfigurer: OptEnvConfigurer, sandboxes: List[Sandbox]): Unit =
     exec(
       None,
-      None,
+      envConfigurer,
       "ghc-pkg",
       "list" :: sandboxes.map(_.asPackageDbArg) : _*)
 
-  private def exec(workDir: Option[File], envConfigurer: Option[Closure[Map[String, Object]]], program: String, args: String*): Unit = {
+  private def exec(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: String*): Unit = {
     executor(asAction({ spec: ExecSpec =>
-      spec.commandLine(program +: args.toSeq : _*)
+      // TODO: check for os?
+      // Wrapping commands in "sh" if needed so they can use the
+      // new PATH created by the envConfigurer
+      val cmdLine: Seq[String] = envConfigurer match {
+        case Some(_) => Seq("sh", "-c",  (program :: args.toList).mkString(" "))
+        case None => program +: args.toSeq
+      }
+
+      spec.commandLine(cmdLine : _*)
 
       envConfigurer map { _.call(spec.getEnvironment()) }
       workDir map { spec.workingDir(_) }
@@ -103,10 +114,14 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 }
 
 object HaskellTools {
+  type EnvConfigurer = Closure[AnyRef]
+  type OptEnvConfigurer = Option[Closure[AnyRef]]
+
   case class CabalContext(
     root: File,
     targetSandbox: Sandbox,
     dependencies: List[Sandbox],
     profiling: Boolean,
-    configFile: Option[String])
+    configFile: Option[String],
+    envConfigurer: OptEnvConfigurer)
 }
