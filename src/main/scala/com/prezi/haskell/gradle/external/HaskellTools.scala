@@ -61,11 +61,8 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
     executor(asAction({ spec: ExecSpec =>
       spec.commandLine(program +: args.toSeq : _*)
 
-      envConfigurer map { ec => ec.call(spec.getEnvironment()) }
-
-      if (workDir.isDefined) {
-        spec.workingDir(workDir.get)
-      }
+      envConfigurer map { _.call(spec.getEnvironment()) }
+      workDir map { spec.workingDir(_) }
     }))
   }
 
