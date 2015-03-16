@@ -1,10 +1,9 @@
 package com.prezi.haskell.gradle.external
 
 import java.io.File
-import java.util
 
 import com.prezi.haskell.gradle.ApiHelper._
-import com.prezi.haskell.gradle.external.HaskellTools.{CabalContext, OptEnvConfigurer}
+import com.prezi.haskell.gradle.external.HaskellTools._
 import com.prezi.haskell.gradle.model.Sandbox
 import groovy.lang.Closure
 import org.gradle.api.Action
@@ -29,7 +28,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       :: ctx.dependencies.map(_.asPackageDbArg)
       ::: List(ctx.targetSandbox.asPackageDbArg,
                ctx.targetSandbox.asPrefixArg)
-      ::: profilingArgs(ctx.profiling)
+      ::: profilingArgs(ctx.profiling, ctx.version)
       : _*)
   }
 
@@ -46,7 +45,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       :: ctx.dependencies.map(_.asPackageDbArg)
       ::: List(ctx.targetSandbox.asPackageDbArg,
                ctx.targetSandbox.asPrefixArg)
-      ::: profilingArgs(ctx.profiling)
+      ::: profilingArgs(ctx.profiling, ctx.version)
       : _*)
 
     exec(
@@ -98,9 +97,12 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
     }))
   }
 
-  private def profilingArgs(profiling: Boolean): List[String] = {
+  private def profilingArgs(profiling: Boolean, cabalVersion: CabalVersion): List[String] = {
     if (profiling) {
-      List("--enable-profiling", "--enable-library-profiling")
+      cabalVersion match {
+        case Cabal120 => List("--enable-executable-profiling", "--enable-library-profiling")
+        case Cabal122 => List("--enable-profiling", "--enable-library-profiling")
+      }
     } else {
       List()
     }
@@ -117,7 +119,21 @@ object HaskellTools {
   type EnvConfigurer = Closure[AnyRef]
   type OptEnvConfigurer = Option[Closure[AnyRef]]
 
+  abstract class CabalVersion
+  object CabalVersion {
+    def parse(version: String): CabalVersion = {
+      version match {
+        case "1.20" => Cabal120
+        case _ => Cabal122
+      }
+    }
+  }
+
+  case object Cabal120 extends CabalVersion
+  case object Cabal122 extends CabalVersion
+
   case class CabalContext(
+    version: CabalVersion,
     root: File,
     targetSandbox: Sandbox,
     dependencies: List[Sandbox],
