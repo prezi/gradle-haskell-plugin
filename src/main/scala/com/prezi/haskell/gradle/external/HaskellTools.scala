@@ -99,10 +99,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
   private def profilingArgs(profiling: Boolean, cabalVersion: CabalVersion): List[String] = {
     if (profiling) {
-      cabalVersion match {
-        case Cabal120 => List("--enable-executable-profiling", "--enable-library-profiling")
-        case Cabal122 => List("--enable-profiling", "--enable-library-profiling")
-      }
+      List("--enable-library-profiling")
     } else {
       List()
     }
