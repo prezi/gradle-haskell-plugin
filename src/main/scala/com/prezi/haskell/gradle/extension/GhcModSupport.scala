@@ -15,5 +15,6 @@ import org.gradle.api.Project
 class GhcModSupport(protected val project: Project) extends GhcModSupportImpl with ProjectExtender {
 
   addTasks
+  extendCleanTask
 }
 
