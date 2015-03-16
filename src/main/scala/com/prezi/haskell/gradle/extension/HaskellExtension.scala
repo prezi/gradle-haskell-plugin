@@ -44,6 +44,7 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   }
   def envConfigurer(value: EnvConfigurer): Unit = setEnvConfigurer(Some(value))
 
+  def cabalType: CabalVersion = cabalVersion_
   def getCabalVersion: String = cabalVersion_.toString
   def setCabalVersion(value: String): Unit = {
     cabalVersion_ = CabalVersion.parse(value)
