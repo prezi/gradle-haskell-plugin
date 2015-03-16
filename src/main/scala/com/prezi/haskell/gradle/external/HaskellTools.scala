@@ -21,6 +21,18 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
+        ::: "configure"
+        :: "--enable-tests"
+        :: "--package-db=clear"
+        :: "--package-db=global"
+        :: profilingArgs(ctx.profiling, ctx.version)
+        : _*)
+
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
       ::: "install"
       :: "-j"
       :: "--enable-tests"
