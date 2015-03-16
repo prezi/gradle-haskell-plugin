@@ -23,6 +23,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       configFileArgs(ctx.configFile)
       ::: "install"
       :: "-j"
+      :: "--enable-tests"
       :: "--package-db=clear"
       :: "--package-db=global"
       :: ctx.dependencies.map(_.asPackageDbArg)
@@ -33,21 +34,6 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
   }
 
   def cabalTest(ctx: CabalContext): Unit = {
-    exec(
-      Some(ctx.root),
-      ctx.envConfigurer,
-      "cabal",
-      configFileArgs(ctx.configFile)
-      ::: "configure"
-      :: "--enable-tests"
-      :: "--package-db=clear"
-      :: "--package-db=global"
-      :: ctx.dependencies.map(_.asPackageDbArg)
-      ::: List(ctx.targetSandbox.asPackageDbArg,
-               ctx.targetSandbox.asPrefixArg)
-      ::: profilingArgs(ctx.profiling, ctx.version)
-      : _*)
-
     exec(
       Some(ctx.root),
       ctx.envConfigurer,
