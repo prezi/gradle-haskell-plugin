@@ -1,10 +1,9 @@
 package com.prezi.haskell.gradle.tasks
 
 import java.io.File
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
 
 import com.prezi.haskell.gradle.model.Sandbox
+import org.apache.commons.io.FileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
@@ -34,7 +33,7 @@ class GenerateGhcModCradle extends DefaultTask with HaskellProjectSupport with H
     }
 
     val cradleFile = generateContent(dependentSandboxes ::: List(sandbox))
-    Files.write(targetFile.get.toPath, cradleFile.getBytes(StandardCharsets.UTF_8))
+    FileUtils.writeStringToFile(targetFile.get, cradleFile)
   }
 
   private def generateContent(sandboxes: List[Sandbox]): String = {
