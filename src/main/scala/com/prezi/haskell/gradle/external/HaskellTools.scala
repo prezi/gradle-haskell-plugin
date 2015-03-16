@@ -21,18 +21,6 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
-        ::: "configure"
-        :: "--enable-tests"
-        :: "--package-db=clear"
-        :: "--package-db=global"
-        :: profilingArgs(ctx.profiling, ctx.version)
-        : _*)
-
-    exec(
-      Some(ctx.root),
-      ctx.envConfigurer,
-      "cabal",
-      configFileArgs(ctx.configFile)
       ::: "install"
       :: "-j"
       :: "--enable-tests"
@@ -51,8 +39,17 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
-      :+ "test"
-      : _*)
+        ::: "install"
+        :: "--run-tests"
+        :: "-j"
+        :: "--enable-tests"
+        :: "--package-db=clear"
+        :: "--package-db=global"
+        :: ctx.dependencies.map(_.asPackageDbArg)
+        ::: List(ctx.targetSandbox.asPackageDbArg,
+        ctx.targetSandbox.asPrefixArg)
+        ::: profilingArgs(ctx.profiling, ctx.version)
+        : _*)
   }
 
   def runHaskell(envConfigurer: OptEnvConfigurer, source: File, args: String*): Unit =
