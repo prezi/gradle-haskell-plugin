@@ -15,6 +15,23 @@ import org.gradle.process.{ExecResult, ExecSpec}
  */
 class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 
+  def cabalConfigure(ctx: CabalContext): Unit = {
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
+        ::: "configure"
+        :: "--enable-tests"
+        :: "--package-db=clear"
+        :: "--package-db=global"
+        :: ctx.dependencies.map(_.asPackageDbArg)
+        ::: List(ctx.targetSandbox.asPackageDbArg,
+        ctx.targetSandbox.asPrefixArg)
+        ::: profilingArgs(ctx.profiling, ctx.version)
+        : _*)
+  }
+
   def cabalInstall(ctx: CabalContext): Unit = {
     exec(
       Some(ctx.root),
@@ -33,23 +50,34 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       : _*)
   }
 
+  def cabalBuild(ctx: CabalContext): Unit = {
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
+        ::: List("build", "-j")
+        : _*)
+  }
+
+  def cabalCopy(ctx: CabalContext): Unit = {
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
+      ::: List("copy")
+      : _*)
+  }
+
   def cabalTest(ctx: CabalContext): Unit = {
     exec(
       Some(ctx.root),
       ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
-        ::: "install"
-        :: "--run-tests"
-        :: "-j"
-        :: "--enable-tests"
-        :: "--package-db=clear"
-        :: "--package-db=global"
-        :: ctx.dependencies.map(_.asPackageDbArg)
-        ::: List(ctx.targetSandbox.asPackageDbArg,
-        ctx.targetSandbox.asPrefixArg)
-        ::: profilingArgs(ctx.profiling, ctx.version)
-        : _*)
+      ::: List("test")
+      : _*)
   }
 
   def runHaskell(envConfigurer: OptEnvConfigurer, source: File, args: String*): Unit =

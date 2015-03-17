@@ -2,7 +2,6 @@ package com.prezi.haskell.gradle.tasks
 
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.model.Sandbox
-import org.gradle.api.DefaultTask
 import org.gradle.api.file.{FileVisitDetails, FileVisitor}
 import org.gradle.api.tasks.TaskAction
 import org.gradle.language.base.FunctionalSourceSet
@@ -39,6 +38,9 @@ class CompileTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalInstall(cabalContext())
+    val ctx = cabalContext()
+    tools.get.cabalConfigure(ctx)
+    tools.get.cabalBuild(ctx)
+    tools.get.cabalCopy(ctx)
   }
 }
