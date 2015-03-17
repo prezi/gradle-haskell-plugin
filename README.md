@@ -56,7 +56,7 @@ haskell {
 }
 ```
 
-or use the `-PghcDisableProfiling` command line argument.
+or use the `-Pghc-disable-profiling` command line argument.
 
 ## Details
 Applying the plugin adds the following to the project:
