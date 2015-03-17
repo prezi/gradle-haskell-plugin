@@ -43,5 +43,6 @@ class CompileTask extends CabalExecTask {
     tools.get.cabalConfigure(ctx)
     tools.get.cabalBuild(ctx)
     tools.get.cabalCopy(ctx)
+    tools.get.cabalRegister(ctx)
   }
 }

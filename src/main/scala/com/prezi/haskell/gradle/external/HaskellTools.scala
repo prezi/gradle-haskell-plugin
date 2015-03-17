@@ -71,6 +71,16 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       : _*)
   }
 
+  def cabalRegister(ctx: CabalContext): Unit = {
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
+        ::: List("register")
+        : _*)
+  }
+
   def cabalTest(ctx: CabalContext): Unit = {
     exec(
       Some(ctx.root),
