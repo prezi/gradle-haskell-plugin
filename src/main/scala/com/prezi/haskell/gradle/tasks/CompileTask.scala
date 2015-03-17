@@ -39,6 +39,7 @@ class CompileTask extends CabalExecTask {
     needsToolsSet
 
     val ctx = cabalContext()
+    tools.get.cabalInstall(ctx, true)
     tools.get.cabalConfigure(ctx)
     tools.get.cabalBuild(ctx)
     tools.get.cabalCopy(ctx)

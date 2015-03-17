@@ -32,7 +32,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
         : _*)
   }
 
-  def cabalInstall(ctx: CabalContext): Unit = {
+  def cabalInstall(ctx: CabalContext, depsOnly: Boolean): Unit = {
     exec(
       Some(ctx.root),
       ctx.envConfigurer,
@@ -47,6 +47,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       ::: List(ctx.targetSandbox.asPackageDbArg,
                ctx.targetSandbox.asPrefixArg)
       ::: profilingArgs(ctx.profiling, ctx.version)
+      ::: onlyDepsArgs(depsOnly)
       : _*)
   }
 
@@ -123,6 +124,14 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
   private def profilingArgs(profiling: Boolean, cabalVersion: CabalVersion): List[String] = {
     if (profiling) {
       List("--enable-library-profiling")
+    } else {
+      List()
+    }
+  }
+
+  private def onlyDepsArgs(onlyDeps: Boolean): List[String] = {
+    if (onlyDeps) {
+      List("--only-dependencies")
     } else {
       List()
     }
