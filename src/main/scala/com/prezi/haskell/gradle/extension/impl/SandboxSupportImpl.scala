@@ -37,4 +37,10 @@ trait SandboxSupportImpl {
      configTask.extractTask = Some(task)
      task.getDependsOn.add(configTask)
    }
+
+   protected def addCabalFreezeTask(): Unit = {
+     val task = createTask[FreezeTask]("cabalFreeze")
+     task.tools = Some(getField[HaskellTools]("haskellTools"))
+     task.configuration = Some(getConfiguration(Names.mainConfiguration))
+   }
  }

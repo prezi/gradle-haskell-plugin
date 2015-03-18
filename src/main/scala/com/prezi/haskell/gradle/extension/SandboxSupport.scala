@@ -15,5 +15,6 @@ class SandboxSupport(protected val project: Project) extends SandboxSupportImpl 
   addSandboxTask
   addSandboxPackagesTask
   addExtractDependentSandboxesTask
+  addCabalFreezeTask
 }
 
