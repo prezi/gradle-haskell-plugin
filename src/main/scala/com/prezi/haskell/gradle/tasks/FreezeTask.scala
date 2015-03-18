@@ -15,7 +15,6 @@ class FreezeTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalConfigure(cabalContext())
     tools.get.cabalFreeze(cabalContext())
   }
 }
