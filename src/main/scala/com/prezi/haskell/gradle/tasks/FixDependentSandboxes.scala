@@ -79,11 +79,10 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     for (dep <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) {
 
       def dumpDep(dep: ResolvedDependency, prefix: String = ""): Unit = {
-        getLogger.debug("{}-> dependency {}", prefix, dep.getName)
-        getLogger.debug("{}--> children:", prefix)
+        getLogger.debug("{}dependency {}", prefix, dep.getName)
 
         for (child <- dep.getChildren.asScala) {
-          dumpDep(child, prefix + " ")
+          dumpDep(child, prefix + "    ")
         }
       }
 
