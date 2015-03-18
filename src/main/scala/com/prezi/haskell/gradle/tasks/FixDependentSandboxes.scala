@@ -26,6 +26,21 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     needsConfigurationSet
     needsToolsSet
 
+    getLogger.info("configuration {} resolution details:", configuration.get.getName)
+    for (dep <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) {
+
+      def dumpDep(dep: ResolvedDependency, prefix: String = ""): Unit = {
+        getLogger.info("{}-> dependency {}", prefix, dep.getName)
+        getLogger.info("{}--> children:", prefix)
+
+        for (child <- dep.getChildren.asScala) {
+          dumpDep(child, prefix + " ")
+        }
+      }
+
+      dumpDep(dep)
+    }
+
     for (dep <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) {
       fixDependency(dep)
     }
