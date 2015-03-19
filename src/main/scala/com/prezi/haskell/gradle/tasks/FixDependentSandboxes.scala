@@ -28,25 +28,40 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
 
     dumpDependencies()
 
-    for (dep <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) {
-      fixDependency(dep)
-    }
+    fixChildren(configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala.toList, Map.empty)
   }
 
   private def finalSandFixPath = sandFixPath.getOrElse(getProject.getBuildDir </> "sandfix/sandfix-1.1")
 
-  private def fixDependency(dep: ResolvedDependency): Set[Sandbox] = {
-    val childSandboxes =
-      dep.getChildren.asScala
-        .map(fixDependency)
-        .fold(Set())(_.union(_))
+  private def merge(a: Map[ResolvedDependency, Set[Sandbox]], b: Map[ResolvedDependency, Set[Sandbox]]): Map[ResolvedDependency, Set[Sandbox]] = {
+    b.foldLeft(a) { case (r, (key, value)) => r.updated(key, value) }
+  }
+
+  private def fixChildren(children: List[ResolvedDependency], alreadyFixed: Map[ResolvedDependency, Set[Sandbox]]): Map[ResolvedDependency, Set[Sandbox]] = {
+    children match {
+      case child::rest =>
+        val childSandboxes = fixChildren(child.getChildren.asScala.toList, alreadyFixed)
+        val newAlreadyFixed = merge(alreadyFixed, childSandboxes)
+
+        if (!newAlreadyFixed.contains(child)) {
+          val childSandBoxes = fixChild(child, childSandboxes)
+          fixChildren(rest, newAlreadyFixed.updated(child, childSandBoxes))
+        } else {
+          fixChildren(rest, newAlreadyFixed)
+        }
+
+      case List() => alreadyFixed
+    }
+  }
+
+  private def fixChild(dep: ResolvedDependency, childSandboxes: Map[ResolvedDependency, Set[Sandbox]]): Set[Sandbox] = {
+    getLogger.info("Fixing dependency {}", dep)
 
     val sandboxes : Set[Sandbox] =
       for (artifact <- dep.getModuleArtifacts.asScala.toSet[ResolvedArtifact])
-      yield Sandbox.fromResolvedArtifact(getProject, artifact)
+        yield Sandbox.fromResolvedArtifact(getProject, artifact)
 
     for (sandbox <- sandboxes) {
-
       getLogger.info("Fixing sandbox at {}", sandbox)
 
       sandbox.root.mkdirs()
@@ -55,7 +70,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
         spec.into (sandbox.root)
       })
 
-      runSandFix(sandbox, childSandboxes.toList)
+      runSandFix(sandbox, childSandboxes.values.toList.flatten)
       tools.get.ghcPkgRecache(haskellExtension.getEnvConfigurer, sandbox)
     }
 
