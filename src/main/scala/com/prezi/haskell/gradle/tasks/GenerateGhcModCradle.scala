@@ -39,6 +39,7 @@ class GenerateGhcModCradle extends DefaultTask with HaskellProjectSupport with H
   private def generateContent(sandboxes: List[Sandbox]): String = {
     val content = new StringBuilder()
 
+    content.append("global\n")
     for (sandbox <- sandboxes) {
       content.append(sandbox.packageDb.getAbsolutePath)
       content.append('\n')
