@@ -40,12 +40,14 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
   private def fixChildren(children: List[ResolvedDependency], alreadyFixed: Map[ResolvedDependency, Set[Sandbox]]): Map[ResolvedDependency, Set[Sandbox]] = {
     children match {
       case child::rest =>
-        val childSandboxes = fixChildren(child.getChildren.asScala.toList, alreadyFixed)
-        val newAlreadyFixed = merge(alreadyFixed, childSandboxes)
+        val childDeps = child.getChildren.asScala.toList
+        val result = fixChildren(childDeps, alreadyFixed)
+        val newAlreadyFixed = merge(alreadyFixed, result)
 
         if (!newAlreadyFixed.contains(child)) {
-          val childSandBoxes = fixChild(child, childSandboxes)
-          fixChildren(rest, newAlreadyFixed.updated(child, childSandBoxes))
+          val childDepSandboxes = childDeps.map(newAlreadyFixed).fold(Set.empty)(_.union(_))
+          val childResultSandBoxes = fixChild(child, childDepSandboxes)
+          fixChildren(rest, newAlreadyFixed.updated(child, childResultSandBoxes union childDepSandboxes))
         } else {
           fixChildren(rest, newAlreadyFixed)
         }
@@ -54,7 +56,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     }
   }
 
-  private def fixChild(dep: ResolvedDependency, childSandboxes: Map[ResolvedDependency, Set[Sandbox]]): Set[Sandbox] = {
+  private def fixChild(dep: ResolvedDependency, childSandboxes: Set[Sandbox]): Set[Sandbox] = {
     getLogger.info("Fixing dependency {}", dep)
 
     val sandboxes : Set[Sandbox] =
@@ -70,7 +72,7 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
         spec.into (sandbox.root)
       })
 
-      runSandFix(sandbox, childSandboxes.values.toList.flatten)
+      runSandFix(sandbox, childSandboxes.toList)
       tools.get.ghcPkgRecache(haskellExtension.getEnvConfigurer, sandbox)
     }
 
