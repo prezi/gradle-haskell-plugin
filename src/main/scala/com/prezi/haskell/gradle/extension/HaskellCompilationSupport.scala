@@ -21,6 +21,7 @@ class HaskellCompilationSupport(
   addSourceSets
   addCompileTasks
   addTestTasks
+  addREPLTask
   extendCleanTask
 }
 

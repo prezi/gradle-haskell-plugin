@@ -5,7 +5,7 @@ import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.{HaskellExtension, ProjectExtender}
 import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.DefaultHaskellSourceSet
-import com.prezi.haskell.gradle.tasks.{CompileTask, TestTask}
+import com.prezi.haskell.gradle.tasks.{REPLTask, CompileTask, TestTask}
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.Delete
 import org.gradle.api.{DefaultTask, Task}
@@ -16,94 +16,101 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin.{ASSEMBLE_TASK_NAME,
 import scala.collection.JavaConverters._
 
 trait HaskellCompilationSupportImpl {
-   this : ProjectExtender =>
+  this: ProjectExtender =>
 
-   protected def instantiator: Instantiator
-   protected def fileResolver: FileResolver
+  protected def instantiator: Instantiator
 
-   protected def registerExtension(): Unit = {
-     createField[HaskellExtension]("haskell", instantiator, project)
-   }
+  protected def fileResolver: FileResolver
 
-   protected def addSourceSets(): Unit = {
-     val mainSources = projectSourceSet.maybeCreate("main")
-     val testSources = projectSourceSet.maybeCreate("test")
+  protected def registerExtension(): Unit = {
+    createField[HaskellExtension]("haskell", instantiator, project)
+  }
 
-     val mainSourceSet = instantiator.create[DefaultHaskellSourceSet]("haskell", mainSources, fileResolver)
-     val cabalSourceSet = instantiator.create[DefaultHaskellSourceSet]("cabal", mainSources, fileResolver)
-     val testSourceSet = instantiator.create[DefaultHaskellSourceSet]("haskell", testSources, fileResolver)
+  protected def addSourceSets(): Unit = {
+    val mainSources = projectSourceSet.maybeCreate("main")
+    val testSources = projectSourceSet.maybeCreate("test")
 
-     mainSourceSet.getSource.srcDir("src/main/haskell")
-     mainSourceSet.getSource.include("**/*.hs")
+    val mainSourceSet = instantiator.create[DefaultHaskellSourceSet]("haskell", mainSources, fileResolver)
+    val cabalSourceSet = instantiator.create[DefaultHaskellSourceSet]("cabal", mainSources, fileResolver)
+    val testSourceSet = instantiator.create[DefaultHaskellSourceSet]("haskell", testSources, fileResolver)
 
-     testSourceSet.getSource.srcDir("src/test/haskell")
-     testSourceSet.getSource.include("**/*.hs")
+    mainSourceSet.getSource.srcDir("src/main/haskell")
+    mainSourceSet.getSource.include("**/*.hs")
 
-     cabalSourceSet.getSource.srcDir(".")
-     cabalSourceSet.getSource.include("*.cabal")
+    testSourceSet.getSource.srcDir("src/test/haskell")
+    testSourceSet.getSource.include("**/*.hs")
 
-     mainSources.add(mainSourceSet)
-     mainSources.add(cabalSourceSet)
-     testSources.add(testSourceSet)
-   }
+    cabalSourceSet.getSource.srcDir(".")
+    cabalSourceSet.getSource.include("*.cabal")
 
-   protected def addCompileTasks(): Unit = {
-     for (conf <- project.getConfigurations.asScala) {
-       val sourceSet = projectSourceSet.findByName(conf.getName)
-       val assembleTask = getTask[Task](ASSEMBLE_TASK_NAME)
+    mainSources.add(mainSourceSet)
+    mainSources.add(cabalSourceSet)
+    testSources.add(testSourceSet)
+  }
 
-       if (sourceSet != null) {
-         if (conf.getName == Names.mainConfiguration) {
-           val compileConfTask = createTask[CompileTask]("compile" + conf.getName.capitalize)
-           compileConfTask.attachToSourceSet(sourceSet)
+  protected def addCompileTasks(): Unit = {
+    for (conf <- project.getConfigurations.asScala) {
+      val sourceSet = projectSourceSet.findByName(conf.getName)
+      val assembleTask = getTask[Task](ASSEMBLE_TASK_NAME)
 
-           compileConfTask.configuration = Some(conf)
-           compileConfTask.tools = tools
+      if (sourceSet != null) {
+        if (conf.getName == Names.mainConfiguration) {
+          val compileConfTask = createTask[CompileTask]("compile" + conf.getName.capitalize)
+          compileConfTask.attachToSourceSet(sourceSet)
 
-           assembleTask.dependsOn(compileConfTask)
-         } else {
-           val compileAliasTask = createTask[DefaultTask]("compile" + conf.getName.capitalize)
+          compileConfTask.configuration = Some(conf)
+          compileConfTask.tools = tools
 
-           compileAliasTask.dependsOn("compileMain")
-           compileAliasTask.dependsOn(conf)
+          assembleTask.dependsOn(compileConfTask)
+        } else {
+          val compileAliasTask = createTask[DefaultTask]("compile" + conf.getName.capitalize)
 
-           assembleTask.dependsOn(compileAliasTask)
-         }
-       }
-     }
+          compileAliasTask.dependsOn("compileMain")
+          compileAliasTask.dependsOn(conf)
 
-     if (!isTaskDefined("build")) {
-       val buildTask = createTask[DefaultTask]("build")
-       buildTask.dependsOn(ASSEMBLE_TASK_NAME)
-       buildTask.dependsOn("check")
-     }
-   }
+          assembleTask.dependsOn(compileAliasTask)
+        }
+      }
+    }
 
-   protected def addTestTasks(): Unit = {
-     val testHaskellTask = createTask[TestTask]("testHaskell")
-     testHaskellTask.dependsOn("compileTest")
-     testHaskellTask.tools = tools
-     testHaskellTask.configuration = Some(getConfiguration(Names.testConfiguration))
+    if (!isTaskDefined("build")) {
+      val buildTask = createTask[DefaultTask]("build")
+      buildTask.dependsOn(ASSEMBLE_TASK_NAME)
+      buildTask.dependsOn("check")
+    }
+  }
 
-     if (!isTaskDefined("test")) {
-       val testTask = createTask[DefaultTask]("test")
-       testTask.dependsOn(testHaskellTask)
-     } else {
-       getTask[Task]("test").dependsOn(testHaskellTask)
-     }
+  protected def addTestTasks(): Unit = {
+    val testHaskellTask = createTask[TestTask]("testHaskell")
+    testHaskellTask.dependsOn("compileTest")
+    testHaskellTask.tools = tools
+    testHaskellTask.configuration = Some(getConfiguration(Names.testConfiguration))
 
-     // The default `check` task just calls the `test` task
-     if (!isTaskDefined("check")) {
-       val checkTask = createTask[DefaultTask]("check")
-       checkTask.getDependsOn.add(testHaskellTask)
-     }
-   }
+    if (!isTaskDefined("test")) {
+      val testTask = createTask[DefaultTask]("test")
+      testTask.dependsOn(testHaskellTask)
+    } else {
+      getTask[Task]("test").dependsOn(testHaskellTask)
+    }
 
-   protected def extendCleanTask(): Unit = {
-     val cleanTask = getTask[Delete](CLEAN_TASK_NAME)
-     cleanTask.delete(project.getProjectDir </> "dist")
-   }
+    // The default `check` task just calls the `test` task
+    if (!isTaskDefined("check")) {
+      val checkTask = createTask[DefaultTask]("check")
+      checkTask.getDependsOn.add(testHaskellTask)
+    }
+  }
 
-   private lazy val projectSourceSet: ProjectSourceSet = getField[HaskellExtension]("haskell").getSources
-   private lazy val tools: Option[HaskellTools] = Some(getField[HaskellTools]("haskellTools"))
- }
+  protected def addREPLTask(): Unit = {
+    val replTask = createTask[REPLTask]("repl")
+    replTask.tools = tools
+    replTask.configuration = Some(getConfiguration(Names.mainConfiguration))
+  }
+
+  protected def extendCleanTask(): Unit = {
+    val cleanTask = getTask[Delete](CLEAN_TASK_NAME)
+    cleanTask.delete(project.getProjectDir </> "dist")
+  }
+
+  private lazy val projectSourceSet: ProjectSourceSet = getField[HaskellExtension]("haskell").getSources
+  private lazy val tools: Option[HaskellTools] = Some(getField[HaskellTools]("haskellTools"))
+}

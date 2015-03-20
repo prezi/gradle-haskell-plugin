@@ -101,6 +101,16 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
         : _*)
   }
 
+  def cabalREPL(ctx: CabalContext): Unit = {
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
+        ::: List("repl")
+        : _*)
+  }
+
   def runHaskell(envConfigurer: OptEnvConfigurer, source: File, args: String*): Unit =
     exec(
       None,
