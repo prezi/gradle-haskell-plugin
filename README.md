@@ -83,6 +83,7 @@ haskell {
       ].join(":"))
   }
 }
+```
 
 ## Details
 Applying the plugin adds the following to the project:
