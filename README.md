@@ -58,6 +58,32 @@ haskell {
 
 or use the `-Pghc-disable-profiling` command line argument.
 
+### GHC and cabal location
+
+It is possible to specify a _cabal config file_ which can point to a non-default global package database, etc:
+```groovy
+haskell {
+  cabalConfigFile = "~/custom/cabal.cfg"
+}
+```
+
+or `-Pcabal-config-file=~/custom/cabal.cfg`.
+
+To manage which `cabal`, `ghc` etc. is executed by the plugin, you can override the `PATH` and other environment variables with the following syntax:
+
+```groovy
+haskell {
+  envConfigurer { Map<String, Object> envMap ->
+    def path = envMap.get("PATH")
+                
+    envMap.put("PATH", [
+        "/custom-ghc-path/bin",
+        "/custom-cabal-path/bin",
+        path
+      ].join(":"))
+  }
+}
+
 ## Details
 Applying the plugin adds the following to the project:
 
@@ -85,6 +111,8 @@ Applying the plugin adds the following to the project:
 - `check` executes `test`. It is an extension point to execute other kind of tests.
 - `build` executes `assemble` and `check`
 - `zipSandbox` packs the whole _sandbox_ as the _artifact_ of the `main` configuration of the project
+- `freeze` executes `cabal freeze`
+- `repl` executes `cabal repl`
 
 Additional tasks supporting the ones above:
 - `sandboxDirectories` creates the sandbox directory structure
