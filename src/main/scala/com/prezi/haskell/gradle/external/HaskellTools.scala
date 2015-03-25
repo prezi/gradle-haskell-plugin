@@ -87,7 +87,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       ctx.envConfigurer,
       "cabal",
       configFileArgs(ctx.configFile)
-      ::: List("test")
+      ::: List("test", "--show-details=streaming")
       : _*)
   }
 
