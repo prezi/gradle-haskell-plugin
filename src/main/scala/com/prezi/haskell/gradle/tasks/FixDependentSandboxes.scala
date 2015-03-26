@@ -3,6 +3,7 @@ package com.prezi.haskell.gradle.tasks
 import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
+import com.prezi.haskell.gradle.external.SandFix
 import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{ResolvedArtifact, ResolvedDependency}
@@ -20,12 +21,14 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
   dependsOn("copySandFix")
 
   var sandFixPath: Option[File] = None
+  private var sandFix: SandFix = null
 
   @TaskAction
   def run(): Unit = {
     needsConfigurationSet
     needsToolsSet
 
+    sandFix = new SandFix(finalSandFixPath, tools.get)
     dumpDependencies()
 
     fixChildren(configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala.toList, Map.empty)
@@ -72,23 +75,11 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
         spec.into (sandbox.root)
       })
 
-      runSandFix(sandbox, childSandboxes.toList)
+      sandFix.run(haskellExtension.getEnvConfigurer, sandbox, childSandboxes.toList)
       tools.get.ghcPkgRecache(haskellExtension.getEnvConfigurer, sandbox)
     }
 
     sandboxes
-  }
-
-  private def runSandFix(sandbox: Sandbox, others: List[Sandbox]): Unit = {
-    val dbArgs = others.map(child => child.asPackageDbArg)
-
-    tools.get.runHaskell(
-      haskellExtension.getEnvConfigurer,
-      finalSandFixPath </> "SandFix.hs",
-      List( sandbox.root.getAbsolutePath,
-        "packages",
-        "--package-db=global")
-        ::: dbArgs.toList : _*)
   }
 
   private def dumpDependencies(): Unit = {

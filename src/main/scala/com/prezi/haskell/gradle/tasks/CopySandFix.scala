@@ -11,7 +11,7 @@ import org.gradle.api.tasks.TaskAction
 import resource._
 
 /**
- * Extracts the SandFix from the downloaded source artifact
+ * Extracts the SandFix from the plugin's resources
  */
 class CopySandFix extends DefaultTask {
 
