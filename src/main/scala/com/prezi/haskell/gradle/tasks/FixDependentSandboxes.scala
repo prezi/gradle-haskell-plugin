@@ -28,13 +28,13 @@ class FixDependentSandboxes extends DefaultTask with HaskellDependencies with Us
     needsConfigurationSet
     needsToolsSet
 
-    sandFix = new SandFix(finalSandFixPath, tools.get)
+    sandFix = new SandFix(getProject.exec, finalSandFixPath </> "SandFix.hs", tools.get)
     dumpDependencies()
 
     fixChildren(configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala.toList, Map.empty)
   }
 
-  private def finalSandFixPath = sandFixPath.getOrElse(getProject.getBuildDir </> "sandfix/sandfix-1.1")
+  private def finalSandFixPath = sandFixPath.getOrElse(getProject.getBuildDir </> "sandfix " </> "sandfix-1.1")
 
   private def merge(a: Map[ResolvedDependency, Set[Sandbox]], b: Map[ResolvedDependency, Set[Sandbox]]): Map[ResolvedDependency, Set[Sandbox]] = {
     b.foldLeft(a) { case (r, (key, value)) => r.updated(key, value) }
