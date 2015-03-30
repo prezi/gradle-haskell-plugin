@@ -101,6 +101,16 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
         : _*)
   }
 
+  def cabalUpdate(ctx: CabalContext): Unit = {
+    exec(
+      Some(ctx.root),
+      ctx.envConfigurer,
+      "cabal",
+      configFileArgs(ctx.configFile)
+        ::: List("update")
+        : _*)
+  }
+
   def cabalREPL(ctx: CabalContext): Unit = {
     exec(
       Some(ctx.root),

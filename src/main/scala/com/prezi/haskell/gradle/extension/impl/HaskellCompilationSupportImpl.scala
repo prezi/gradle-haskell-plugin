@@ -5,7 +5,7 @@ import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.{HaskellExtension, ProjectExtender}
 import com.prezi.haskell.gradle.external.HaskellTools
 import com.prezi.haskell.gradle.model.DefaultHaskellSourceSet
-import com.prezi.haskell.gradle.tasks.{REPLTask, CompileTask, TestTask}
+import com.prezi.haskell.gradle.tasks.{UpdateTask, REPLTask, CompileTask, TestTask}
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.Delete
 import org.gradle.api.{DefaultTask, Task}
@@ -104,6 +104,12 @@ trait HaskellCompilationSupportImpl {
     val replTask = createTask[REPLTask]("repl")
     replTask.tools = tools
     replTask.configuration = Some(getConfiguration(Names.mainConfiguration))
+  }
+
+  protected def addCabalUpdateTask(): Unit = {
+    val updateTask = createTask[UpdateTask]("cabalUpdate")
+    updateTask.tools = tools
+    updateTask.configuration = Some(getConfiguration(Names.mainConfiguration))
   }
 
   protected def extendCleanTask(): Unit = {
