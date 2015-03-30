@@ -23,6 +23,8 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       configFileArgs(ctx.configFile)
         ::: "configure"
         :: "--enable-tests"
+        :: "--disable-executable-stripping"
+        :: "--disable-library-stripping"
         :: "--package-db=clear"
         :: "--package-db=global"
         :: ctx.dependencies.map(_.asPackageDbArg)
