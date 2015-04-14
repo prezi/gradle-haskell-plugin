@@ -4,9 +4,9 @@ Haskell plugin for Gradle
 ## Usage
 
 Put your _source code_ to `src/main/haskell`, the _test code_ to `src/test/haskell` and the _cabal file_ to the project's root.
-Don't forger to set the source directory in the _cabal file_ too:
+Don't forget to set the source directory in the _cabal file_ too:
 ```
-  hs-source-dirs:      src/main/haskell
+hs-source-dirs:      src/main/haskell
 ```
 
 For the default operation all you have to do is _apply the plugin_:
