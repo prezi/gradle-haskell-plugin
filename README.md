@@ -1,4 +1,6 @@
 # gradle-haskell-plugin
+[![Build Status](https://travis-ci.org/prezi/gradle-haskell-plugin.svg)](https://travis-ci.org/prezi/gradle-haskell-plugin)
+
 Haskell plugin for Gradle
 
 ## Usage
