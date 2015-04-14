@@ -34,6 +34,8 @@ apply plugin: 'maven'
 apply plugin: org.scoverage.ScoveragePlugin
 
 def scalaVersion = "2.11.5"
+def ossRelease = hasProperty("oss")
+def signArtifacts = ossRelease || hasProperty("sign")
 
 group = 'com.prezi.haskell'
 
@@ -93,18 +95,39 @@ uploadArchives {
 					}
 				}
 
-				def user = project.getProperty("nexusUser")
-				def password = project.getProperty("nexusPassword")
+                if (ossRelease) {
+                    // TODO: add sonatype repos
+                }
+                else if (project.hasProperty("nexusUser") && project.hasProperty("nexusPassword")) {
+                    def user = project.getProperty("nexusUser")
+                    def password = project.getProperty("nexusPassword")
 
-				repository(url: "https://artifactory.prezi.com/plugins-release-local/") {
-					authentication(userName: user, password: password)
-				}
-				snapshotRepository(url: "https://artifactory.prezi.com/plugins-snapshot-local/") {
-					authentication(userName: user, password: password)
-				}
+                    repository(url: "https://artifactory.prezi.com/plugins-release-local/") {
+                        authentication(userName: user, password: password)
+                    }
+                    snapshotRepository(url: "https://artifactory.prezi.com/plugins-snapshot-local/") {
+                        authentication(userName: user, password: password)
+                    }
+                }
 			}
 		}
 	}
+}
+
+if (signArtifacts) {
+    apply plugin: "signing"
+
+    signing {
+        sign configurations.archives
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            }
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {
