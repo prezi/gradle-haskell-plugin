@@ -1,31 +1,31 @@
 buildscript {
-	repositories {
-		maven { url "http://dl.bintray.com/releashaus/release" }
-		maven { url "https://oss.sonatype.org/content/groups/public" }
-	}
+    repositories {
+        maven { url "http://dl.bintray.com/releashaus/release" }
+        maven { url "https://oss.sonatype.org/content/groups/public" }
+    }
 
-	dependencies {
-		classpath 'org.scoverage:gradle-scoverage:1.0.8'
-	}
+    dependencies {
+        classpath 'org.scoverage:gradle-scoverage:1.0.8'
+    }
 }
 
 repositories {
-	mavenLocal()
-	mavenCentral()
+    mavenLocal()
+    mavenCentral()
 
-	maven {
-		url "http://dl.bintray.com/scalaz/releases"
-	}
+    maven {
+        url "http://dl.bintray.com/scalaz/releases"
+    }
 }
 
 if (hasProperty("release")) {
-	version = [ "git", "describe", "--match", "[0-9]*", "--dirty"].execute().text.trim()
+    version = [ "git", "describe", "--match", "[0-9]*", "--dirty"].execute().text.trim()
 } else {
-	version = [ "git", "describe", "--match", "[0-9]*", "--abbrev=0"].execute().text.trim() + "-SNAPSHOT"
+    version = [ "git", "describe", "--match", "[0-9]*", "--abbrev=0"].execute().text.trim() + "-SNAPSHOT"
 }
 
 task version << {
-	println "Version: ${version}"
+    println "Version: ${version}"
 }
 
 apply plugin: 'scala'
@@ -38,65 +38,74 @@ def ossRelease = hasProperty("oss")
 def signArtifacts = ossRelease || hasProperty("sign")
 
 group = 'com.prezi.haskell'
+description = 'Gradle plugin for Haskell projects'
 
 dependencies {
-	compile gradleApi()
-	compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
-	compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
-	compile group: "com.jsuereth", name: "scala-arm_2.11", version: "1.4"
-	compile group: "commons-io", name: "commons-io", version: "2.4"
+    compile gradleApi()
+    compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
+    compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
+    compile group: "com.jsuereth", name: "scala-arm_2.11", version: "1.4"
+    compile group: "commons-io", name: "commons-io", version: "2.4"
 
-	testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
-	testCompile group: "org.specs2", name: "specs2-core_2.11", version: "3.0"
-	testCompile group: "org.specs2", name: "specs2-mock_2.11", version: "3.0"
-	testCompile group: "org.specs2", name: "specs2-junit_2.11", version: "3.0"
+    testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
+    testCompile group: "org.specs2", name: "specs2-core_2.11", version: "3.0"
+    testCompile group: "org.specs2", name: "specs2-mock_2.11", version: "3.0"
+    testCompile group: "org.specs2", name: "specs2-junit_2.11", version: "3.0"
 
-	scoverage 'org.scoverage:scalac-scoverage-plugin_2.11:1.0.4'
-	scoverage 'org.scoverage:scalac-scoverage-runtime_2.11:1.0.4'
+    scoverage 'org.scoverage:scalac-scoverage-plugin_2.11:1.0.4'
+    scoverage 'org.scoverage:scalac-scoverage-runtime_2.11:1.0.4'
 }
 
 tasks.withType(ScalaCompile) {
-	scalaCompileOptions.useAnt = false
-	scalaCompileOptions.additionalParameters = ["-unchecked", "-deprecation", "-feature", "-Xfatal-warnings"]
+    scalaCompileOptions.useAnt = false
+    scalaCompileOptions.additionalParameters = ["-unchecked", "-deprecation", "-feature", "-Xfatal-warnings"]
 }
 
 checkScoverage {
-	// minimumLineRate = 0.9
+    // minimumLineRate = 0.9
 }
 
 uploadArchives {
-	repositories {
-		repositories {
-			mavenDeployer {
-				pom.project {
-					url "http://github.com/prezi/gradle-haskell-plugin"
-					name project.name
-					description project.description
+    repositories {
+        repositories {
+            mavenDeployer {
+                pom.project {
+                    url "http://github.com/prezi/gradle-haskell-plugin"
+                    name project.name
+                    description project.description
+                    packaging 'jar'
 
-					scm {
-						url "http://github.com/prezi/gradle-haskell-plugin"
-						connection "scm:git@github.com:prezi/gradle-haskell-plugin.git"
-						developerConnection "scm:git@github.com:prezi/gradle-haskell-plugin.git"
-					}
+                    scm {
+                        url "http://github.com/prezi/gradle-haskell-plugin"
+                        connection "scm:git@github.com:prezi/gradle-haskell-plugin.git"
+                        developerConnection "scm:git@github.com:prezi/gradle-haskell-plugin.git"
+                    }
 
-					licenses {
-						license {
-							name "The Apache Software License, Version 2.0"
-							url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-							distribution "repo"
-						}
-					}
+                    licenses {
+                        license {
+                            name "The Apache Software License, Version 2.0"
+                            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                            distribution "repo"
+                        }
+                    }
 
-					developers {
-						developer {
-							id "vigoo"
-							name "Daniel Vigovszky"
-						}
-					}
-				}
+                    developers {
+                        developer {
+                            id "vigoo"
+                            name "Daniel Vigovszky"
+                            email 'daniel.vigovszky@gmail.com'
+                        }
+                    }
+                }
 
                 if (ossRelease) {
-                    // TODO: add sonatype repos
+                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                    }
+
+                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                    }
                 }
                 else if (project.hasProperty("nexusUser") && project.hasProperty("nexusPassword")) {
                     def user = project.getProperty("nexusUser")
@@ -109,9 +118,9 @@ uploadArchives {
                         authentication(userName: user, password: password)
                     }
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 if (signArtifacts) {
@@ -131,5 +140,5 @@ if (signArtifacts) {
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.2.1'
+    gradleVersion = '2.2.1'
 }
