@@ -139,6 +139,27 @@ if (signArtifacts) {
     }
 }
 
+task javadocJar(type: Jar) {
+    dependsOn scaladoc
+    classifier = "javadoc"
+    from "build/docs/scaladoc"
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = "sources"
+}
+
+jar {
+    from rootProject.file("LICENSE")
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.2.1'
 }
