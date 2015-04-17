@@ -14,6 +14,16 @@ hs-source-dirs:      src/main/haskell
 For the default operation all you have to do is _apply the plugin_:
 
 ```groovy
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.prezi.haskell:gradle-haskell-plugin:0.2+'
+    }
+}
+
 apply plugin: 'haskell'
 ```
 
