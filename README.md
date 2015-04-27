@@ -154,4 +154,4 @@ Additional tasks supporting the ones above:
 
 ### ghc-mod support
 The `ghc-mod` support is implemented by the following _pull request_ on the `ghc-mod` side:
-https://github.com/kazu-yamamoto/ghc-mod/pull/447
+https://github.com/kazu-yamamoto/ghc-mod/pull/470
