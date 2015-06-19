@@ -42,6 +42,6 @@ trait HaskellDependencies {
   protected def dependentSandboxes: List[Sandbox] =
     configuration.get.getResolvedConfiguration.getResolvedArtifacts
       .asScala
-      .map(artifact => store.get(new SandboxArtifact(artifact.getName, artifact.getFile)))
+      .map(artifact => store.find(new SandboxArtifact(artifact.getName, artifact.getFile)))
       .toList
 }

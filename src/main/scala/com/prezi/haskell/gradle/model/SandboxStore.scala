@@ -13,6 +13,7 @@ trait SandboxStore {
 
   def root: File
   def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact])
+  def find(depSandbox: SandboxArtifact): Sandbox
   def get(sandbox: SandboxArtifact): Sandbox
 }
 
@@ -22,7 +23,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
 
   private def finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
 
-  private def find(depSandbox: SandboxArtifact) =
+  override def find(depSandbox: SandboxArtifact): Sandbox =
     depSandbox.toSandbox(root)
 
   override def get(depSandbox: SandboxArtifact): Sandbox = {
@@ -64,7 +65,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
     val envConfigurer = exts.getEnvConfigurer
     val (_, elapsed) = measureTime {
       val sandFix = new SandFix(project.exec, finalSandFixPath </> "SandFix.hs", tools)
-      sandFix.run(envConfigurer, sandbox, dependencies.map(_.toSandbox(root)).toList)
+      sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList)
     }
     project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
 
