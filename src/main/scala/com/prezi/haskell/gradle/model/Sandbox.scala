@@ -3,9 +3,6 @@ package com.prezi.haskell.gradle.model
 import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
-import org.apache.commons.io.FilenameUtils._
-import org.gradle.api.Project
-import org.gradle.api.artifacts.ResolvedArtifact
 
 /**
  * Represents a custom sandbox
@@ -13,17 +10,13 @@ import org.gradle.api.artifacts.ResolvedArtifact
  */
 class Sandbox(val root: File) {
 
-  val extractionRoot = new File(root.getAbsolutePath + ".tmp")
+  val extractionRoot = root
   val packageDb = root </> "packages"
   val installPrefix = root </> "files"
+  val lock = root </> ".lock"
 
   def asPackageDbArg: String = s"--package-db=$packageDb"
   def asPrefixArg: String = s"--prefix=$installPrefix"
 
   override def toString = root.getAbsolutePath
-}
-
-object Sandbox {
-  def fromResolvedArtifact(project: Project, artifact: ResolvedArtifact): Sandbox =
-    new Sandbox(project.getBuildDir </> "deps" </> getBaseName(artifact.getFile.getName))
 }

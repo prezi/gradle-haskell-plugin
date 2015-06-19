@@ -8,7 +8,7 @@ import org.gradle.api.tasks.TaskAction
 class FreezeTask extends CabalExecTask {
 
   dependsOn("sandbox")
-  dependsOn("fixDependentSandboxes")
+  dependsOn("storeDependentSandboxes")
 
   @TaskAction
   def run(): Unit = {
