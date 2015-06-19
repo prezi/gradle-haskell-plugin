@@ -20,7 +20,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.prezi.haskell:gradle-haskell-plugin:0.2+'
+        classpath 'com.prezi.haskell:gradle-haskell-plugin:0.3.1+'
     }
 }
 
