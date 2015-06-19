@@ -28,20 +28,5 @@ class SandboxSpecs extends SpecificationWithJUnit with Mockito {
     "be able to generate prefix argument" in {
       sandbox.asPrefixArg mustEqual "--prefix=root/files"
     }
-
-    "be constructable from a project's resolved artifact" in {
-      val project = mock[Project]
-      val artifact = mock[ResolvedArtifact]
-
-      val buildDir = root
-      val artifactName = "artifact"
-
-      project.getBuildDir returns buildDir
-      artifact.getFile returns (new File(artifactName))
-
-      val depSandbox = Sandbox.fromResolvedArtifact(project, artifact)
-
-      depSandbox.root mustEqual buildDir </> "deps" </> artifactName
-    }
   }
 }

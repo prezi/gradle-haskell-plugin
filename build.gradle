@@ -46,6 +46,8 @@ dependencies {
     compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
     compile group: "com.jsuereth", name: "scala-arm_2.11", version: "1.4"
     compile group: "commons-io", name: "commons-io", version: "2.4"
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
+
 
     testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
     testCompile group: "org.specs2", name: "specs2-core_2.11", version: "3.0"
