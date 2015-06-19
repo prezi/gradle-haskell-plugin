@@ -208,12 +208,16 @@ object HaskellTools {
   case object Cabal120 extends CabalVersion
   case object Cabal122 extends CabalVersion
 
-  case class CabalContext(
-    version: CabalVersion,
-    root: File,
-    targetSandbox: Sandbox,
-    dependencies: List[Sandbox],
-    profiling: Boolean,
-    configFile: Option[String],
-    envConfigurer: OptEnvConfigurer)
+  class CabalContext(
+    val version: CabalVersion,
+    val root: File,
+    getTargetSandbox: => Sandbox,      // not every cabal command require these, so we evaluate them lazily
+    getDependencies: => List[Sandbox],
+    val profiling: Boolean,
+    val configFile: Option[String],
+    val envConfigurer: OptEnvConfigurer) {
+
+    lazy val targetSandbox = getTargetSandbox
+    lazy val dependencies = getDependencies
+  }
 }
