@@ -4,13 +4,13 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.{HaskellExtension, ProjectExtender}
 import com.prezi.haskell.gradle.external.HaskellTools
+import com.prezi.haskell.gradle.incubating.ProjectSourceSet
 import com.prezi.haskell.gradle.model.DefaultHaskellSourceSet
 import com.prezi.haskell.gradle.tasks.{UpdateTask, REPLTask, CompileTask, TestTask}
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.Delete
 import org.gradle.api.{DefaultTask, Task}
 import org.gradle.internal.reflect.Instantiator
-import org.gradle.language.base.ProjectSourceSet
 import org.gradle.language.base.plugins.LifecycleBasePlugin.{ASSEMBLE_TASK_NAME, CLEAN_TASK_NAME}
 
 import scala.collection.JavaConverters._

@@ -2,10 +2,9 @@ package com.prezi.haskell.gradle.extension
 
 import com.prezi.haskell.gradle.extension.HaskellExtension.PropertyKey
 import com.prezi.haskell.gradle.external.HaskellTools.{Cabal122, CabalVersion, EnvConfigurer, OptEnvConfigurer}
+import com.prezi.haskell.gradle.incubating.{DefaultProjectSourceSet, ProjectSourceSet}
 import org.gradle.api.{Action, Project}
 import org.gradle.internal.reflect.Instantiator
-import org.gradle.language.base.ProjectSourceSet
-import org.gradle.language.base.internal.DefaultProjectSourceSet
 
 /**
  * Project extension holding the source set and other properties for Haskell projects
