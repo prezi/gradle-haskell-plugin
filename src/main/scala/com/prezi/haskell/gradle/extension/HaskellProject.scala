@@ -20,7 +20,6 @@ class HaskellProject(
   addFields
   addConfigurations
   addSandboxTasks
-  addSandFix
   addCompilation
   addArtifacts
   addGhcModSupport

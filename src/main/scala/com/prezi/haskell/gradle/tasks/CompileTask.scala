@@ -3,6 +3,7 @@ package com.prezi.haskell.gradle.tasks
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.incubating.FunctionalSourceSet
 import com.prezi.haskell.gradle.model.Sandbox
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.{FileVisitDetails, FileVisitor}
 import org.gradle.api.tasks.TaskAction
 
@@ -15,7 +16,7 @@ class CompileTask extends CabalExecTask {
   val buildDir = getProject.getProjectDir </> "dist"
 
   dependsOn("sandbox")
-  dependsOn("fixDependentSandboxes")
+  dependsOn("storeDependentSandboxes")
 
   def attachToSourceSet(sourceSet: FunctionalSourceSet) = {
 
@@ -31,6 +32,10 @@ class CompileTask extends CabalExecTask {
 
     dependsOn(sourceSet)
     getOutputs.dir(getProject.getExtensions.getByType(classOf[Sandbox]).root)
+  }
+
+  override def onConfigurationSet(cfg: Configuration): Unit = {
+    dependsOn(cfg)
   }
 
   @TaskAction

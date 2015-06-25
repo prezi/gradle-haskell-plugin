@@ -1,6 +1,6 @@
 package com.prezi.haskell.gradle.tasks
 
-import com.prezi.haskell.gradle.model.Sandbox
+import com.prezi.haskell.gradle.model.{SandboxArtifact, Sandbox, SandboxStore}
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 
@@ -37,9 +37,11 @@ trait HaskellDependencies {
     }
   }
 
+  protected def store: SandboxStore = getProject.getExtensions.findByName("sandboxStore").asInstanceOf[SandboxStore]
+
   protected def dependentSandboxes: List[Sandbox] =
     configuration.get.getResolvedConfiguration.getResolvedArtifacts
       .asScala
-      .map(Sandbox.fromResolvedArtifact(getProject, _))
+      .map(artifact => store.find(new SandboxArtifact(artifact.getName, artifact.getFile)))
       .toList
 }
