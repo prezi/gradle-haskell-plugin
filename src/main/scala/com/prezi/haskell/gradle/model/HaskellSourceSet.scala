@@ -1,8 +1,7 @@
 package com.prezi.haskell.gradle.model
 
+import com.prezi.haskell.gradle.incubating.{FunctionalSourceSet, LanguageSourceSet, AbstractLanguageSourceSet}
 import org.gradle.api.internal.file.{DefaultSourceDirectorySet, FileResolver}
-import org.gradle.language.base.internal.AbstractLanguageSourceSet
-import org.gradle.language.base.{FunctionalSourceSet, LanguageSourceSet}
 
 /**
  * Source set for Haskell projects

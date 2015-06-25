@@ -33,6 +33,8 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: org.scoverage.ScoveragePlugin
 
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"
 def scalaVersion = "2.11.5"
 def ossRelease = hasProperty("oss")
 def signArtifacts = ossRelease || hasProperty("sign")
@@ -49,7 +51,10 @@ dependencies {
     compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
 
 
-    testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
+	// Required only for the incubating stuff brought over from Gradle 2.0
+	compile "commons-lang:commons-lang:2.6"
+
+	testCompile group: "org.specs2", name: "specs2_2.11", version: "3.0"
     testCompile group: "org.specs2", name: "specs2-core_2.11", version: "3.0"
     testCompile group: "org.specs2", name: "specs2-mock_2.11", version: "3.0"
     testCompile group: "org.specs2", name: "specs2-junit_2.11", version: "3.0"
@@ -163,5 +168,5 @@ artifacts {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.2.1'
+    gradleVersion = '2.4'
 }
