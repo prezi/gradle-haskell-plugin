@@ -68,6 +68,6 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
     results.foldLeft((Set[SandboxArtifact](), SandBoxStoreResult.AlreadyExists.asInstanceOf[SandBoxStoreResult])) { (acc, elem) =>
       (acc._1 ++ elem._1,
         if (elem._2 == SandBoxStoreResult.Created) SandBoxStoreResult.Created
-        else SandBoxStoreResult.AlreadyExists)
+        else acc._2)
     }
 }
