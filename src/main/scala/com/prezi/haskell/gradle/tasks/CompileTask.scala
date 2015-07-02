@@ -21,7 +21,7 @@ class CompileTask extends CabalExecTask {
   dependsOn("sandbox")
   dependsOn("storeDependentSandboxes")
 
-  getOutputs.upToDateWhen{ _: AnyRef =>
+  getOutputs.upToDateWhen { _: AnyRef =>
     (for {
       storeDependentSandboxesTask <- Try { getProject.getTasksByName("storeDependentSandboxes", false).iterator().next() }
       isAnySandboxUpdated <- Try { storeDependentSandboxesTask.asInstanceOf[StoreDependentSandboxes].isAnySandboxUpdated }
@@ -31,37 +31,36 @@ class CompileTask extends CabalExecTask {
     }
   }
 
-    def attachToSourceSet(sourceSet: FunctionalSourceSet) = {
+  def attachToSourceSet(sourceSet: FunctionalSourceSet) = {
 
-      for (lss <- sourceSet.asScala) {
-        lss.getSource.visit(new FileVisitor {
-          override def visitDir(fileVisitDetails: FileVisitDetails): Unit =
-            getInputs.dir(fileVisitDetails.getFile)
+    for (lss <- sourceSet.asScala) {
+      lss.getSource.visit(new FileVisitor {
+        override def visitDir(fileVisitDetails: FileVisitDetails): Unit =
+          getInputs.dir(fileVisitDetails.getFile)
 
-          override def visitFile(fileVisitDetails: FileVisitDetails): Unit =
-            getInputs.file(fileVisitDetails.getFile)
-        })
-      }
-
-      dependsOn(sourceSet)
-      getOutputs.dir(getProject.getExtensions.getByType(classOf[Sandbox]).root)
+        override def visitFile(fileVisitDetails: FileVisitDetails): Unit =
+          getInputs.file(fileVisitDetails.getFile)
+      })
     }
 
-    override def onConfigurationSet(cfg: Configuration): Unit =
-    {
-      dependsOn(cfg)
-    }
-
-    @TaskAction
-    def run(): Unit = {
-      needsConfigurationSet
-      needsToolsSet
-
-      val ctx = cabalContext()
-      tools.get.cabalInstall(ctx, depsOnly = true)
-      tools.get.cabalConfigure(ctx)
-      tools.get.cabalBuild(ctx)
-      tools.get.cabalCopy(ctx)
-      tools.get.cabalRegister(ctx)
-    }
+    dependsOn(sourceSet)
+    getOutputs.dir(getProject.getExtensions.getByType(classOf[Sandbox]).root)
   }
+
+  override def onConfigurationSet(cfg: Configuration): Unit = {
+    dependsOn(cfg)
+  }
+
+  @TaskAction
+  def run(): Unit = {
+    needsConfigurationSet
+    needsToolsSet
+
+    val ctx = cabalContext()
+    tools.get.cabalInstall(ctx, depsOnly = true)
+    tools.get.cabalConfigure(ctx)
+    tools.get.cabalBuild(ctx)
+    tools.get.cabalCopy(ctx)
+    tools.get.cabalRegister(ctx)
+  }
+}
