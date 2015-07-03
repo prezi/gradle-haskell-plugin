@@ -2,7 +2,8 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 
-import com.prezi.haskell.gradle.model.{SandBoxStoreResult, SandboxArtifact}
+import com.prezi.haskell.gradle.model.{SandboxStore, SandBoxStoreResult, SandboxArtifact}
+import com.twitter.util.Memoize
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{Configuration, ResolvedDependency}
 import org.gradle.api.tasks.TaskAction
@@ -37,6 +38,8 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
   }
 
   def storeDependency(dependency: ResolvedDependency, prefix: String = ""): (Set[SandboxArtifact], SandBoxStoreResult) = {
+    import StoreDependentSandboxes._
+
     getLogger.info("{}Dependency {}", prefix, dependency.getName)
 
     val (depSandboxes: Set[SandboxArtifact], aggregatedStoreResult: SandBoxStoreResult) =
@@ -54,7 +57,7 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
 
     val sandboxStoreResults =
       for (sandbox <- sandboxes) yield {
-        store.store(sandbox, depSandboxes)
+        memoizedStoreDependencyInStore((store, sandbox, depSandboxes))
       }
 
     (sandboxes,
@@ -70,4 +73,14 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
         if (elem._2 == SandBoxStoreResult.Created) SandBoxStoreResult.Created
         else acc._2)
     }
+
+}
+
+object StoreDependentSandboxes {
+  def storeDependencyInStore(inputs: (SandboxStore, SandboxArtifact, Set[SandboxArtifact])) = {
+    val (store, sandbox, depSandboxes) = inputs
+    store.store(sandbox, depSandboxes)
+  }
+
+  val memoizedStoreDependencyInStore = Memoize { storeDependencyInStore }
 }

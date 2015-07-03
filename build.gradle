@@ -47,6 +47,7 @@ dependencies {
     compile group: "org.scala-lang", name: "scala-library", version: "$scalaVersion"
     compile group: "org.scala-lang", name: "scala-compiler", version: "$scalaVersion"
     compile group: "com.jsuereth", name: "scala-arm_2.11", version: "1.4"
+    compile group: "com.twitter", name: "util-core_2.11", version: "6.25.0"
     compile group: "commons-io", name: "commons-io", version: "2.4"
     compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
 
