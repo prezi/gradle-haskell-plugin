@@ -2,7 +2,7 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 
-import com.prezi.haskell.gradle.model.{SandboxStore, SandBoxStoreResult, SandboxArtifact}
+import com.prezi.haskell.gradle.model.{SandBoxStoreResult, SandboxArtifact}
 import com.twitter.util.Memoize
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{Configuration, ResolvedDependency}
@@ -38,7 +38,6 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
   }
 
   def storeDependency(dependency: ResolvedDependency, prefix: String = ""): (Set[SandboxArtifact], SandBoxStoreResult) = {
-    import StoreDependentSandboxes._
 
     getLogger.info("{}Dependency {}", prefix, dependency.getName)
 
@@ -57,7 +56,7 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
 
     val sandboxStoreResults =
       for (sandbox <- sandboxes) yield {
-        memoizedStoreDependencyInStore((store, sandbox, depSandboxes))
+        memoizedStoreDependencyInStore(sandbox, depSandboxes)
       }
 
     (sandboxes,
@@ -74,13 +73,32 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
         else acc._2)
     }
 
+  def memoizedStoreDependencyInStore(sandbox: SandboxArtifact, depSandboxes: Set[SandboxArtifact]): SandBoxStoreResult = {
+    val memoizedStore = getOrSetRootProjectProperty(
+      StoreDependentSandboxes.RootProjectPropMemoizedStoreDependencyInStore,
+      Memoize[(SandboxArtifact, Set[SandboxArtifact]), SandBoxStoreResult] {
+        params => store.store(params._1, params._2)
+      }
+    )
+
+    memoizedStore(sandbox, depSandboxes)
+  }
+
+
+  def getOrSetRootProjectProperty[V <: Object](propertyName: String, propertyValue: => V): V = {
+    val rootProject = getProject.getRootProject
+
+    if (rootProject.hasProperty(propertyName)) {
+      rootProject.getProperties.get(propertyName).asInstanceOf[V]
+    }
+    else {
+      rootProject.getProperties.asInstanceOf[java.util.Map[String, Object]].put(propertyName, propertyValue)
+      propertyValue
+    }
+  }
 }
 
 object StoreDependentSandboxes {
-  def storeDependencyInStore(inputs: (SandboxStore, SandboxArtifact, Set[SandboxArtifact])) = {
-    val (store, sandbox, depSandboxes) = inputs
-    store.store(sandbox, depSandboxes)
-  }
-
-  val memoizedStoreDependencyInStore = Memoize { storeDependencyInStore }
+  val RootProjectPropSandboxStore = "haskell.cache.sandboxStore"
+  val RootProjectPropMemoizedStoreDependencyInStore = "haskell.cache.memoizedStoreDependencyInStore"
 }
