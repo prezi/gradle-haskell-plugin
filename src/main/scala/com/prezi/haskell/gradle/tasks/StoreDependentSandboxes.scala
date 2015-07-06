@@ -67,17 +67,18 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
   }
 
   def foldStoreDependencyResults(results: Set[(Set[SandboxArtifact], SandBoxStoreResult)]): (Set[SandboxArtifact], SandBoxStoreResult) =
-    results.foldLeft((Set[SandboxArtifact](), SandBoxStoreResult.AlreadyExists.asInstanceOf[SandBoxStoreResult])) { (acc, elem) =>
-      (acc._1 ++ elem._1,
-        if (elem._2 == SandBoxStoreResult.Created) SandBoxStoreResult.Created
-        else acc._2)
+    results.foldLeft((Set[SandboxArtifact](), SandBoxStoreResult.AlreadyExists.asInstanceOf[SandBoxStoreResult])) {
+      case ((accSandboxes, accStoreResult), (sandbox, storeResult)) =>
+        (accSandboxes ++ sandbox,
+          if (storeResult == SandBoxStoreResult.Created) SandBoxStoreResult.Created
+          else accStoreResult)
     }
 
   def memoizedStoreDependencyInStore(sandbox: SandboxArtifact, depSandboxes: Set[SandboxArtifact]): SandBoxStoreResult = {
     val memoizedStore = getOrSetRootProjectProperty(
       StoreDependentSandboxes.RootProjectPropMemoizedStoreDependencyInStore,
       Memoize[(SandboxArtifact, Set[SandboxArtifact]), SandBoxStoreResult] {
-        params => store.store(params._1, params._2)
+        case (depSandbox, dependencies) => store.store(depSandbox, dependencies)
       }
     )
 
