@@ -12,9 +12,15 @@ import org.gradle.api.file.CopySpec
 trait SandboxStore {
 
   def root: File
-  def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact])
+  def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact]): SandBoxStoreResult
   def find(depSandbox: SandboxArtifact): Sandbox
   def get(sandbox: SandboxArtifact): Sandbox
+}
+
+sealed trait SandBoxStoreResult
+object SandBoxStoreResult {
+  case object Created extends SandBoxStoreResult
+  case object AlreadyExists extends SandBoxStoreResult
 }
 
 class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => HaskellExtension, tools: => HaskellTools) extends SandboxStore {
@@ -35,7 +41,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
     fixedSandbox
   }
 
-  override def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact]) = {
+  override def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact]): SandBoxStoreResult = {
     val sandbox = find(depSandbox)
     if (!sandbox.root.exists()) {
       sandbox.root.mkdirs()
@@ -45,6 +51,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
         try {
           extractSandbox(depSandbox, sandbox)
           fixSandbox(depSandbox, dependencies, sandbox)
+          SandBoxStoreResult.Created
         }
         finally {
           project.getLogger.debug("Unlocking sandbox {}", sandbox.root.getAbsolutePath)
@@ -56,6 +63,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
       }
     } else {
       project.getLogger.info("Sandbox already exists at {}", sandbox.root.getAbsolutePath)
+      SandBoxStoreResult.AlreadyExists
     }
   }
 

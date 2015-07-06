@@ -34,6 +34,17 @@ class ApiHelperSpecs extends SpecificationWithJUnit with Mockito {
     }
   }
 
+  "asClosureWithReturn" should {
+    "create an equivalent closure" in {
+      val input: String = "b"
+      val fn = (input: String) => input + input
+
+      val closure = ApiHelper.asClosureWithReturn[String, String](fn)
+
+      closure.call(input) mustEqual "bb"
+    }
+  }
+
   "instantiatorExt" should {
     "call instantiator's newInstance method" in {
       val instantiator = mock[Instantiator]

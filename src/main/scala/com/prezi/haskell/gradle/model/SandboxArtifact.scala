@@ -7,7 +7,7 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FilenameUtils._
 import resource._
 
-class SandboxArtifact(val name: String, val artifact: File) {
+case class SandboxArtifact(name: String, artifact: File) {
 
   private def calculateChecksum: String =
     (managed(new FileInputStream(artifact)) map DigestUtils.md5Hex).opt.get

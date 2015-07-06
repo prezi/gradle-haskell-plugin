@@ -19,11 +19,18 @@ object ApiHelper {
       override def execute(t: T): Unit = action(t)
     }
 
-  implicit def asClosure[T](action: T => Unit): Closure[T] =
+  implicit def asClosure[T](fun: T => Unit): Closure[T] =
     new Closure[T](()) {
       protected def doCall(args: AnyRef): AnyRef = {
-        action(args.asInstanceOf[T])
+        fun(args.asInstanceOf[T])
         null
+      }
+    }
+
+  implicit def asClosureWithReturn[A, B<:AnyRef](fun: A => B): Closure[A] =
+    new Closure[A](()) {
+      protected def doCall(args: AnyRef): AnyRef = {
+        fun(args.asInstanceOf[A])
       }
     }
 
