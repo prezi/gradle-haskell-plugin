@@ -6,6 +6,7 @@ import com.prezi.haskell.gradle.model.{SandBoxStoreResult, SandboxArtifact}
 import com.twitter.util.Memoize
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{Configuration, ResolvedDependency}
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.TaskAction
 
 import scala.collection.JavaConverters._
@@ -34,7 +35,16 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
         storeDependency(dependency)
       }
 
+    if (getLogger.isDebugEnabled) {
+      getLogger.log(LogLevel.DEBUG, "StoreDependencyResults:")
+      storeDependencyResults foreach { case (sandboxArtifacts, storeResult) =>
+        getLogger.debug("{}: {}", sandboxArtifacts, storeResult)
+      }
+    }
+
     _isAnySandboxUpdated = storeDependencyResults.exists { _._2 == SandBoxStoreResult.Created }
+
+    getLogger.debug("isAnySandboxUpdated: {}", isAnySandboxUpdated)
   }
 
   def storeDependency(dependency: ResolvedDependency, prefix: String = ""): (Set[SandboxArtifact], SandBoxStoreResult) = {
@@ -56,7 +66,9 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
 
     val sandboxStoreResults =
       for (sandbox <- sandboxes) yield {
-        memoizedStoreDependencyInStore(sandbox, depSandboxes)
+        val res = memoizedStoreDependencyInStore(sandbox, depSandboxes)
+        getLogger.debug("{}memoizedStoreDependencyInStore({}, {})", res, sandbox, depSandboxes)
+        res
       }
 
     (sandboxes,
@@ -93,6 +105,7 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
       rootProject.getProperties.get(propertyName).asInstanceOf[V]
     }
     else {
+      getLogger.debug("Setting root project property: [key = {}, value = {}]", propertyName, propertyValue)
       rootProject.getProperties.asInstanceOf[java.util.Map[String, Object]].put(propertyName, propertyValue)
       propertyValue
     }
