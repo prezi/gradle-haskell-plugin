@@ -101,7 +101,7 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
   def getOrSetRootProjectProperty[V <: Object](propertyName: String, propertyValue: => V): V = {
     val rootProject = getProject.getRootProject
 
-    if (rootProject.getProperties.containsKey(propertyName)) {
+    if (rootProject.hasProperty(propertyName)) {
       rootProject.getProperties.get(propertyName).asInstanceOf[V]
     }
     else {
