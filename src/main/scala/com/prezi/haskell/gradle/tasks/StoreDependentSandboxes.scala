@@ -1,9 +1,9 @@
 package com.prezi.haskell.gradle.tasks
 
 import java.io.File
+import java.util
 
 import com.prezi.haskell.gradle.model.{SandBoxStoreResult, SandboxArtifact}
-import com.twitter.util.Memoize
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{Configuration, ResolvedDependency}
 import org.gradle.api.logging.LogLevel
@@ -67,7 +67,7 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
     val sandboxStoreResults =
       for (sandbox <- sandboxes) yield {
         val res = memoizedStoreDependencyInStore(sandbox, depSandboxes)
-        getLogger.debug("{}memoizedStoreDependencyInStore({}, {})", res, sandbox, depSandboxes)
+        getLogger.debug("{} <- memoizedStoreDependencyInStore({}, {})", res, sandbox, depSandboxes)
         res
       }
 
@@ -87,14 +87,22 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
     }
 
   def memoizedStoreDependencyInStore(sandbox: SandboxArtifact, depSandboxes: Set[SandboxArtifact]): SandBoxStoreResult = {
-    val memoizedStore = getOrSetRootProjectProperty(
-      StoreDependentSandboxes.RootProjectPropMemoizedStoreDependencyInStore,
-      Memoize[(SandboxArtifact, Set[SandboxArtifact]), SandBoxStoreResult] {
-        case (depSandbox, dependencies) => store.store(depSandbox, dependencies)
-      }
-    )
+    synchronized {
+      val sandboxStoreCache: util.Map[String, String] =
+        getOrSetRootProjectProperty[util.Map[String, String]](
+          StoreDependentSandboxes.RootProjectPropSandboxStoreResult,
+          new util.HashMap[String, String]() // this needs to be a java (not scala) collection, otherwise classloader related cast issues will happen
+        )
 
-    memoizedStore(sandbox, depSandboxes)
+      val key = sandbox.toNormalizedString
+      if (sandboxStoreCache.containsKey(key)) {
+        SandBoxStoreResult(sandboxStoreCache.get(key))
+      } else {
+        val res = store.store(sandbox, depSandboxes)
+        sandboxStoreCache.put(key, res.toNormalizedString)
+        res
+      }
+    }
   }
 
 
@@ -103,16 +111,16 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
 
     if (rootProject.hasProperty(propertyName)) {
       rootProject.getProperties.get(propertyName).asInstanceOf[V]
-    }
-    else {
-      getLogger.debug("Setting root project property: [key = {}, value = {}]", propertyName, propertyValue)
-      rootProject.getProperties.asInstanceOf[java.util.Map[String, Object]].put(propertyName, propertyValue)
-      propertyValue
+    } else {
+      val value = propertyValue
+      getLogger.debug("Setting root project property: [key = {}, value = {}]", propertyName, value)
+      rootProject.getExtensions.add(propertyName, value)
+      value
     }
   }
 }
 
 object StoreDependentSandboxes {
   val RootProjectPropSandboxStore = "haskell.cache.sandboxStore"
-  val RootProjectPropMemoizedStoreDependencyInStore = "haskell.cache.memoizedStoreDependencyInStore"
+  val RootProjectPropSandboxStoreResult = "haskell.cache.sandboxStoreResult"
 }

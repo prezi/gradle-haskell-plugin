@@ -6,6 +6,7 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Profiling._
 import com.prezi.haskell.gradle.extension.HaskellExtension
 import com.prezi.haskell.gradle.external.{HaskellTools, SandFix}
+import com.prezi.haskell.gradle.model.SandBoxStoreResult.{AlreadyExists, Created}
 import org.gradle.api.{GradleException, Project}
 import org.gradle.api.file.CopySpec
 
@@ -17,10 +18,26 @@ trait SandboxStore {
   def get(sandbox: SandboxArtifact): Sandbox
 }
 
-sealed trait SandBoxStoreResult
+sealed trait SandBoxStoreResult {
+  def toNormalizedString:String
+}
+
 object SandBoxStoreResult {
-  case object Created extends SandBoxStoreResult
-  case object AlreadyExists extends SandBoxStoreResult
+
+  def apply(str:String): SandBoxStoreResult = {
+    str match {
+      case "Created" => Created
+      case "AlreadyExists" => AlreadyExists
+      case s => throw sys.error(s"Illegal SandBoxStoreResult: $s")
+    }
+  }
+
+  case object Created extends SandBoxStoreResult {
+    override def toNormalizedString: String = "Created"
+  }
+  case object AlreadyExists extends SandBoxStoreResult {
+    override def toNormalizedString: String = "AlreadyExists"
+  }
 }
 
 class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => HaskellExtension, tools: => HaskellTools) extends SandboxStore {

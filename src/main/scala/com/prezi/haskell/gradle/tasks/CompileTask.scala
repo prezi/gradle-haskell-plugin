@@ -27,7 +27,7 @@ class CompileTask extends CabalExecTask {
       isAnySandboxUpdated <- Try { storeDependentSandboxesTask.asInstanceOf[StoreDependentSandboxes].isAnySandboxUpdated }
     } yield isAnySandboxUpdated) match {
       case Success(bool) => new Boolean(!bool)
-      case Failure(e) => throw new RuntimeException("Failed to get storeDependentSandboxes.anySandboxUpdated!", e)
+      case Failure(e) => throw new RuntimeException("Failed to get storeDependentSandboxes.isAnySandboxUpdated!", e)
     }
   }
 
