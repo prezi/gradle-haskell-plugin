@@ -5,3 +5,6 @@ build/
 gradle-app.setting
 out
 target
+*.iml
+*.ipr
+*.orig

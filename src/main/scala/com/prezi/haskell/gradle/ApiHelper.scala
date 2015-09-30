@@ -34,7 +34,7 @@ object ApiHelper {
       }
     }
 
-  implicit def instantiatorExt(instantiator: Instantiator) =
+  implicit def instantiatorExt(instantiator: Instantiator): InstantiatorExt =
     new InstantiatorExt(instantiator)
 
   class InstantiatorExt(instantiator: Instantiator) {
