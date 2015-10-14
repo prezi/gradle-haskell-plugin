@@ -22,7 +22,7 @@ class HaskellProject(
   addSandboxTasks
   addCompilation
   addArtifacts
-  addGhcModSupport
+  addStackSupport // TODO: only in stack mode
 }
 
 

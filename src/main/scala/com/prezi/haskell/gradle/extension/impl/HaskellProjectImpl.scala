@@ -52,7 +52,7 @@ trait HaskellProjectImpl {
     new ZippedSandboxArtifactSupport(project)
   }
 
-  protected def addGhcModSupport(): Unit = {
-    new GhcModSupport(project)
+  protected def addStackSupport(): Unit = {
+    new StackSupport(project)
   }
 }

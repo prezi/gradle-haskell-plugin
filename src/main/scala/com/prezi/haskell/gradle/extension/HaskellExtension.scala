@@ -13,6 +13,9 @@ import org.gradle.internal.reflect.Instantiator
 class HaskellExtension(instantiator: Instantiator, project: Project) extends java.io.Serializable {
   private val sources_ : ProjectSourceSet = instantiator.newInstance(classOf[DefaultProjectSourceSet], instantiator)
   private var profiling_ : Boolean = !project.hasProperty(PropertyKey.GhcDisableProfiling)
+  private var useStack_ : Boolean = project.hasProperty(PropertyKey.UseStack)
+  private var ghcVersion_ : String = "ghc-7.10.2"
+  private var snapshotId_ : String = "lts-3.8"
   private var cabalVersion_ : CabalVersion = Cabal122
   private var cabalConfigFile_ : Option[String] =
     if (project.hasProperty(PropertyKey.CabalConfigFile)) Some(project.getProperties.get(PropertyKey.CabalConfigFile).toString)
@@ -30,6 +33,12 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
     profiling_ = value
   }
   def profiling(value: Boolean): Unit = setProfiling(value)
+
+  def getUseStack = useStack_
+  def setUseStack(value: Boolean): Unit = {
+    useStack_ = value
+  }
+  def useStack(value: Boolean): Unit = setUseStack(value)
 
   def getCabalConfigFile = cabalConfigFile_
   def setCabalConfigFile(value: String): Unit = {
@@ -49,11 +58,27 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
     cabalVersion_ = CabalVersion.parse(value)
   }
   def cabalVersion(value: String): Unit = setCabalVersion(value)
+
+  def ghcVersion: String = ghcVersion_
+  def getGhcVersion: String = ghcVersion_
+  def setGhcVersion(value: String): Unit = {
+    ghcVersion_ = value
+  }
+  def ghcVersion(value: String): Unit = setGhcVersion(value)
+
+  def snapshotId: String = snapshotId_
+  def getSnapshotId: String = snapshotId_
+  def setSnapshotId(value: String): Unit = {
+    snapshotId_ = value
+  }
+  def snapshotId(value: String): Unit = setSnapshotId(value)
+
 }
 
 object HaskellExtension {
   object PropertyKey {
     val GhcDisableProfiling = "ghc-disable-profiling"
     val CabalConfigFile = "cabal-config-file"
+    val UseStack = "use-stack"
   }
 }
