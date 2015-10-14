@@ -46,9 +46,9 @@ class GenerateStackYaml
 
     content.append(
       s"""flags: {}
-        | packages:
-        |   - .
-        | resolver: $resolver""".stripMargin)
+         |packages:
+         |  - .
+         |resolver: $resolver""".stripMargin)
 
     content.append("\n\nextra-package-dbs:")
 
