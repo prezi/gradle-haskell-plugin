@@ -77,13 +77,11 @@ class GenerateStackYaml
       content.append("extra-deps: []\n")
     }
 
-    val snapshotId = haskellExtension.snapshotId
-
     content.mkString
   }
 
   private def findCabalFile(): File =
-    getProject.getRootDir.listFiles().filter(_.getName.endsWith(".cabal")).headOption match {
+    getProject.getProjectDir.listFiles().find(_.getName.endsWith(".cabal")) match {
       case Some(file) => file
       case None => throw new GradleException(s"Could not find any .cabal files in ${getProject.getRootDir.getAbsolutePath}")
     }
