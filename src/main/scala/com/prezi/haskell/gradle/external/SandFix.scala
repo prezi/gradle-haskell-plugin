@@ -2,7 +2,7 @@ package com.prezi.haskell.gradle.external
 
 import java.io.{FileInputStream, File}
 
-import com.prezi.haskell.gradle.external.HaskellTools.OptEnvConfigurer
+import com.prezi.haskell.gradle.external.ToolsBase.OptEnvConfigurer
 import com.prezi.haskell.gradle.model.Sandbox
 import com.prezi.haskell.gradle.ApiHelper._
 import org.apache.commons.codec.digest.DigestUtils
@@ -38,7 +38,7 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
       }
 
       spec.commandLine(cmdLine : _*)
-      envConfigurer map { _.call(spec.getEnvironment()) }
+      envConfigurer map { _.call(spec.getEnvironment) }
     }))
   }
 

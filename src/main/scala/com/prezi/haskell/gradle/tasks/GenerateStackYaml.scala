@@ -2,12 +2,18 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 
+import com.prezi.haskell.gradle.external.SnapshotVersions
 import com.prezi.haskell.gradle.model.Sandbox
 import org.apache.commons.io.FileUtils
-import org.gradle.api.DefaultTask
+import org.gradle.api.{GradleException, DefaultTask}
 import org.gradle.api.tasks.TaskAction
 
-class GenerateStackYaml extends DefaultTask with HaskellProjectSupport with HaskellDependencies {
+class GenerateStackYaml
+  extends DefaultTask
+  with HaskellProjectSupport
+  with HaskellDependencies
+  with UsingHaskellTools
+  with UsingGit {
 
   private var targetFile_ : Option[File] = None
 
@@ -23,6 +29,8 @@ class GenerateStackYaml extends DefaultTask with HaskellProjectSupport with Hask
   @TaskAction
   def run(): Unit = {
     needsConfigurationSet
+    needsGitSet
+    needsToolsSet
 
     if (!targetFile.isDefined) {
       throw new IllegalStateException("targetFile is not specified")
@@ -55,10 +63,29 @@ class GenerateStackYaml extends DefaultTask with HaskellProjectSupport with Hask
       }
     }
 
-    content.append("extra-deps: []\n") // TODO: use snapshot-versions
+    val snapshotVersions = new SnapshotVersions(haskellExtension.getEnvConfigurer, getProject.exec, tools.get, git.get)
+    val deps = snapshotVersions.run(haskellExtension.snapshotId, findCabalFile())
+
+    if (deps.length > 0) {
+      content.append("extra-deps:\n")
+      for (dep <- deps) {
+        content.append("  - ")
+        content.append(dep)
+        content.append('\n')
+      }
+    } else {
+      content.append("extra-deps: []\n")
+    }
+
     val snapshotId = haskellExtension.snapshotId
 
     content.mkString
   }
+
+  private def findCabalFile(): File =
+    getProject.getRootDir.listFiles().filter(_.getName.endsWith(".cabal")).headOption match {
+      case Some(file) => file
+      case None => throw new GradleException(s"Could not find any .cabal files in ${getProject.getRootDir.getAbsolutePath}")
+    }
 }
 

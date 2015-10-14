@@ -1,7 +1,8 @@
 package com.prezi.haskell.gradle.extension
 
 import com.prezi.haskell.gradle.extension.HaskellExtension.PropertyKey
-import com.prezi.haskell.gradle.external.HaskellTools.{Cabal122, CabalVersion, EnvConfigurer, OptEnvConfigurer}
+import com.prezi.haskell.gradle.external.HaskellTools.{Cabal122, CabalVersion}
+import com.prezi.haskell.gradle.external.ToolsBase.{EnvConfigurer, OptEnvConfigurer}
 import com.prezi.haskell.gradle.incubating.{DefaultProjectSourceSet, ProjectSourceSet}
 import org.gradle.api.{Action, Project}
 import org.gradle.internal.reflect.Instantiator

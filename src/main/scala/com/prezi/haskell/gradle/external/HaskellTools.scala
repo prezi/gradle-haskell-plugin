@@ -1,11 +1,10 @@
 package com.prezi.haskell.gradle.external
 
-import java.io.{ByteArrayOutputStream, File}
+import java.io.File
 
-import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.HaskellTools._
+import com.prezi.haskell.gradle.external.ToolsBase.OptEnvConfigurer
 import com.prezi.haskell.gradle.model.Sandbox
-import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.process.{ExecResult, ExecSpec}
 
@@ -13,7 +12,8 @@ import org.gradle.process.{ExecResult, ExecSpec}
  * Executes external tools with the Gradle project's execution command
  * @param executor The `project.exec` function
  */
-class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
+class HaskellTools(executor : Action[ExecSpec] => ExecResult)
+  extends ToolsBase(executor) {
 
   def cabalConfigure(ctx: CabalContext): Unit = {
     exec(
@@ -166,40 +166,21 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       .head
   }
 
-  private def exec(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: String*): Unit = {
-    executor(asAction({ spec: ExecSpec =>
-      val cmdLine = getCmdLine(workDir, envConfigurer, program, args)
-      spec.commandLine(cmdLine: _*)
+  def stack(envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): Unit =
+    exec(
+      Some(workingDir),
+      envConfigurer,
+      "stack",
+      params : _*
+    )
 
-      envConfigurer map { _.call(spec.getEnvironment) }
-      workDir map { spec.workingDir(_) }
-    }))
-  }
-
-  private def capturedExec(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: String*): String = {
-    val stream = new ByteArrayOutputStream()
-
-    executor(asAction({ spec: ExecSpec =>
-      val cmdLine = getCmdLine(workDir, envConfigurer, program, args)
-      spec.commandLine(cmdLine: _*)
-
-      envConfigurer map { _.call(spec.getEnvironment) }
-      workDir map { spec.workingDir(_) }
-      spec.setStandardOutput(stream)
-    }))
-
-    stream.toString
-  }
-
-  private def getCmdLine(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: Seq[String]): Seq[String] = {
-    // TODO: check for os?
-    // Wrapping commands in "sh" if needed so they can use the
-    // new PATH created by the envConfigurer
-    envConfigurer match {
-      case Some(_) => Seq("sh", "-c", (program :: args.toList).mkString(" "))
-      case None => program +: args.toSeq
-    }
-  }
+  def capturedStack(envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): String =
+    capturedExec(
+      Some(workingDir),
+      envConfigurer,
+      "stack",
+      params : _*
+    )
 
   private def profilingArgs(profiling: Boolean, cabalVersion: CabalVersion): List[String] = {
     if (profiling) {
@@ -228,9 +209,6 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
 }
 
 object HaskellTools {
-  type EnvConfigurer = Closure[AnyRef]
-  type OptEnvConfigurer = Option[Closure[AnyRef]]
-
   abstract class CabalVersion
   object CabalVersion {
     def parse(version: String): CabalVersion = {
