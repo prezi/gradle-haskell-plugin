@@ -15,7 +15,8 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
 
   def run(envConfigurer: OptEnvConfigurer, sandbox: Sandbox, others: List[Sandbox]): Unit = {
 
-    val cacheDir = getCacheDir(sourceHash)
+    val cabalVersion = haskellTools.getCabalVersion(envConfigurer)
+    val cacheDir = getCacheDir(cabalVersion, sourceHash)
     val cachedSandfix = getCachedFile(cacheDir)
 
     if (!cachedSandfix.exists()) {
@@ -44,8 +45,8 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
   private def calculateSourceHash(): String =
     (managed(new FileInputStream(sandFixPath)) map DigestUtils.md5Hex).opt.get
 
-  private def getCacheDir(hash: String): File =
-    new File(System.getProperty("user.home")) </> ".gradle-haskell" </> "sandfix-cache" </> hash
+  private def getCacheDir(cabalVersion: String, hash: String): File =
+    new File(System.getProperty("user.home")) </> ".gradle-haskell" </> "sandfix-cache" </> s"$cabalVersion-$hash"
 
   private def compileToCache(envConfigurer: OptEnvConfigurer, cacheDir: File): Unit = {
     if (!cacheDir.exists()) {

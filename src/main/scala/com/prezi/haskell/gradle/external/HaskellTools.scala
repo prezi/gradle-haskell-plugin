@@ -1,6 +1,6 @@
 package com.prezi.haskell.gradle.external
 
-import java.io.File
+import java.io.{ByteArrayOutputStream, File}
 
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.HaskellTools._
@@ -151,21 +151,54 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult) {
       "ghc-pkg",
       "list" :: sandboxes.map(_.asPackageDbArg) : _*)
 
+  def getCabalVersion(envConfigurer: OptEnvConfigurer): String = {
+    val output = capturedExec(
+      None,
+      envConfigurer,
+      "ghc-pkg",
+      "describe", "Cabal"
+    )
+
+    output
+      .split('\n')
+      .filter(_.startsWith("version: "))
+      .map(_.substring("version: ".length))
+      .head
+  }
+
   private def exec(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: String*): Unit = {
     executor(asAction({ spec: ExecSpec =>
-      // TODO: check for os?
-      // Wrapping commands in "sh" if needed so they can use the
-      // new PATH created by the envConfigurer
-      val cmdLine: Seq[String] = envConfigurer match {
-        case Some(_) => Seq("sh", "-c",  (program :: args.toList).mkString(" "))
-        case None => program +: args.toSeq
-      }
+      val cmdLine = getCmdLine(workDir, envConfigurer, program, args)
+      spec.commandLine(cmdLine: _*)
 
-      spec.commandLine(cmdLine : _*)
-
-      envConfigurer map { _.call(spec.getEnvironment()) }
+      envConfigurer map { _.call(spec.getEnvironment) }
       workDir map { spec.workingDir(_) }
     }))
+  }
+
+  private def capturedExec(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: String*): String = {
+    val stream = new ByteArrayOutputStream()
+
+    executor(asAction({ spec: ExecSpec =>
+      val cmdLine = getCmdLine(workDir, envConfigurer, program, args)
+      spec.commandLine(cmdLine: _*)
+
+      envConfigurer map { _.call(spec.getEnvironment) }
+      workDir map { spec.workingDir(_) }
+      spec.setStandardOutput(stream)
+    }))
+
+    stream.toString
+  }
+
+  private def getCmdLine(workDir: Option[File], envConfigurer: OptEnvConfigurer, program: String, args: Seq[String]): Seq[String] = {
+    // TODO: check for os?
+    // Wrapping commands in "sh" if needed so they can use the
+    // new PATH created by the envConfigurer
+    envConfigurer match {
+      case Some(_) => Seq("sh", "-c", (program :: args.toList).mkString(" "))
+      case None => program +: args.toSeq
+    }
   }
 
   private def profilingArgs(profiling: Boolean, cabalVersion: CabalVersion): List[String] = {
