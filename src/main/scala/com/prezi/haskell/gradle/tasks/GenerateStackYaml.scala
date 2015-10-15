@@ -42,7 +42,7 @@ class GenerateStackYaml
 
   private def generateContent(sandboxes: List[Sandbox]): String = {
     val content = new StringBuilder()
-    val resolver = s"ghc-${haskellExtension.ghcVersion}"
+    val resolver = s"${haskellExtension.ghcVersion}"
 
     content.append(
       s"""flags: {}
