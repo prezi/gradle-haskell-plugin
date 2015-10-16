@@ -51,4 +51,8 @@ trait HaskellProjectImpl {
       new StackSupport(project)
     }
   }
+
+  protected def registerExtension(): Unit = {
+    createField[HaskellExtension]("haskell", instantiator, project)
+  }
 }

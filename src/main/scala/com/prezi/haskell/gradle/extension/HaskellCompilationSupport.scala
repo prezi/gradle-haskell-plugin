@@ -17,7 +17,6 @@ class HaskellCompilationSupport(
   protected val fileResolver: FileResolver)
   extends HaskellCompilationSupportImpl with ProjectExtender {
 
-  registerExtension
   addSourceSets
   addCompileTasks
   addTestTasks

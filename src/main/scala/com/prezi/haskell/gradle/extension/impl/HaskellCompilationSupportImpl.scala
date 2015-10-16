@@ -22,10 +22,6 @@ trait HaskellCompilationSupportImpl {
 
   protected def fileResolver: FileResolver
 
-  protected def registerExtension(): Unit = {
-    createField[HaskellExtension]("haskell", instantiator, project)
-  }
-
   protected def addSourceSets(): Unit = {
     val mainSources = projectSourceSet.maybeCreate("main")
     val testSources = projectSourceSet.maybeCreate("test")

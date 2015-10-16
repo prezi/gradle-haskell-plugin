@@ -17,6 +17,7 @@ class HaskellProject(
     protected val fileResolver: FileResolver)
   extends HaskellProjectImpl with ProjectExtender {
   // Integrating haskell support to project
+  registerExtension
   addFields
   addConfigurations
   addSandboxTasks
