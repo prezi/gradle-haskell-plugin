@@ -18,11 +18,12 @@ import scala.util.{Failure, Success, Try}
 class CompileTask extends CabalExecTask {
   val buildDir = getProject.getProjectDir </> "dist"
 
-  dependsOn("sandbox")
   dependsOn("storeDependentSandboxes")
 
   if (haskellExtension.getUseStack) {
     dependsOn("generateStackYaml")
+  } else {
+    dependsOn("sandbox")
   }
 
   getOutputs.upToDateWhen { _: AnyRef =>
@@ -69,7 +70,13 @@ class CompileTask extends CabalExecTask {
 
   def runWithStack(): Unit = {
     tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "setup")
-    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "build")
+
+    val profilingArgs = if (cabalContext().profiling) {
+      List("--executable-profiling", "--library-profiling")
+    } else {
+      List()
+    }
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "build" :: profilingArgs : _*)
   }
 
   def runWithCabal(): Unit = {

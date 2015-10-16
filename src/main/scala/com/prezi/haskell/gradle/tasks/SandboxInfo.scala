@@ -6,7 +6,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Prints basic info about a project's sandbox
  */
-class SandboxInfo extends DefaultTask with HaskellProjectSupport {
+class SandboxInfo extends DefaultTask with HaskellProjectSupport with UsesSandbox {
 
   @TaskAction
   def run(): Unit = {

@@ -7,7 +7,11 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Initializes the sandbox of a project
  */
-class SandboxTask extends DefaultTask with HaskellProjectSupport with UsingHaskellTools {
+class SandboxTask extends DefaultTask
+  with HaskellProjectSupport
+  with UsingHaskellTools
+  with UsesSandbox {
+
   dependsOn("sandboxDirectories")
 
   @TaskAction

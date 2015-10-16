@@ -6,7 +6,13 @@ import org.gradle.api.DefaultTask
 /**
  * Trait for tasks that executes cabal
  */
-trait CabalExecTask extends DefaultTask with HaskellProjectSupport with HaskellDependencies with UsingHaskellTools {
+trait CabalExecTask
+  extends DefaultTask
+  with HaskellProjectSupport
+  with HaskellDependencies
+  with UsingHaskellTools
+  with UsesSandbox {
+
   def cabalContext(): CabalContext = new CabalContext(
     haskellExtension.cabalType,
     getProject.getProjectDir,

@@ -7,14 +7,17 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FilenameUtils._
 import resource._
 
-  case class SandboxArtifact(name: String, artifact: File) {
+case class SandboxArtifact(name: String, artifact: File) {
 
   private def calculateChecksum: String =
     (managed(new FileInputStream(artifact)) map DigestUtils.md5Hex).opt.get
 
 
-  def toSandbox(root: File): Sandbox =
-    new Sandbox(root </> "deps" </> getBaseName(name) </> calculateChecksum)
+  def toCabalSandbox(root: File): Sandbox =
+    new CabalSandbox(root </> "deps" </> getBaseName(name) </> calculateChecksum)
+
+  def toStackSandbox(root: File): Sandbox =
+    new StackSandbox(root </> "deps" </> getBaseName(name) </> calculateChecksum)
 
   def toNormalizedString = name + "#" + artifact.getAbsoluteFile
 

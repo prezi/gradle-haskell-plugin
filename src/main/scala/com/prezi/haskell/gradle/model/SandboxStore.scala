@@ -40,14 +40,18 @@ object SandBoxStoreResult {
   }
 }
 
-class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => HaskellExtension, tools: => HaskellTools) extends SandboxStore {
+class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => HaskellExtension, tools: => HaskellTools, useStack: Boolean) extends SandboxStore {
 
   val root = project.getBuildDir
 
   private def finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
 
   override def find(depSandbox: SandboxArtifact): Sandbox =
-    depSandbox.toSandbox(root)
+    if (useStack) {
+      depSandbox.toStackSandbox(root)
+    } else {
+      depSandbox.toCabalSandbox(root)
+    }
 
   override def get(depSandbox: SandboxArtifact): Sandbox = {
     val fixedSandbox = find(depSandbox)

@@ -3,14 +3,12 @@ package com.prezi.haskell.gradle.model
 import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
-import org.gradle.api.Project
-import org.gradle.api.artifacts.ResolvedArtifact
-import org.specs2.mutable._
 import org.specs2.mock._
+import org.specs2.mutable._
 
 class SandboxSpecs extends SpecificationWithJUnit with Mockito {
   val root = new File("root")
-  val sandbox = new Sandbox(root)
+  val sandbox = new CabalSandbox(root)
 
   "Sandbox" should {
     "define the package database as a subdirectory" in {

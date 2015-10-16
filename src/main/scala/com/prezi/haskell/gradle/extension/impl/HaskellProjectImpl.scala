@@ -1,12 +1,10 @@
 package com.prezi.haskell.gradle.extension.impl
 
-import java.io.File
-
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension._
 import com.prezi.haskell.gradle.external.{Git, HaskellTools}
-import com.prezi.haskell.gradle.model.{ProjectSandboxStore, Sandbox}
-import com.prezi.haskell.gradle.ApiHelper._
+import com.prezi.haskell.gradle.model.ProjectSandboxStore
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator
 
@@ -14,23 +12,16 @@ trait HaskellProjectImpl {
   this: ProjectExtender =>
 
   protected def instantiator: Instantiator
-
   protected def fileResolver: FileResolver
 
-  val sandbox = new Sandbox(new File(project.getBuildDir, "sandbox"))
   val sandFixPath = project.getBuildDir </> "sandfix"
 
   // Helpers
   protected def addFields(): Unit = {
 
-    addField("ghcSandbox", sandbox)
-    addField("ghcSandboxRoot", sandbox.root)
-    addField("ghcPackageDb", sandbox.packageDb)
-    addField("ghcPrefix", sandbox.installPrefix)
-
     val tools = new HaskellTools(project.exec)
     addField("haskellTools", tools)
-    addField("sandboxStore", new ProjectSandboxStore(project.getRootProject, Some(sandFixPath), getField[HaskellExtension]("haskell"), tools))
+    addField("sandboxStore", new ProjectSandboxStore(project.getRootProject, Some(sandFixPath), getField[HaskellExtension]("haskell"), tools, haskellExtension.getUseStack))
 
     val git = new Git(project.exec)
     addField("git", git)

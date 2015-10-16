@@ -5,7 +5,7 @@ import org.gradle.api.tasks.bundling.Zip
 /**
  * Zips the projects sandbox to create its main artifact
  */
-class ZippedSandbox extends Zip with HaskellProjectSupport {
+class ZippedSandbox extends Zip with HaskellProjectSupport with UsesSandbox {
 
     getDependsOn.addAll(getProject.getTasksByName("compileMain", false))
     from(sandbox.root)

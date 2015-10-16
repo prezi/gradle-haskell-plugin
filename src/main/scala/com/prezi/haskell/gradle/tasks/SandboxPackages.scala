@@ -6,14 +6,22 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Lists the packages in a project's sandbox, and all its dependent sandboxes
  */
-class SandboxPackages extends DefaultTask with HaskellProjectSupport with HaskellDependencies with UsingHaskellTools {
-   dependsOn("sandbox")
+class SandboxPackages
+  extends DefaultTask
+  with HaskellProjectSupport
+  with HaskellDependencies
+  with UsingHaskellTools
+  with UsesSandbox {
 
-   @TaskAction
-   def run(): Unit = {
-     needsToolsSet
-     needsConfigurationSet
+  if (!haskellExtension.getUseStack) {
+    dependsOn("sandbox")
+  }
 
-     tools.get.ghcPkgList(haskellExtension.getEnvConfigurer, dependentSandboxes.+:(sandbox))
-   }
- }
+  @TaskAction
+  def run(): Unit = {
+    needsToolsSet
+    needsConfigurationSet
+
+    tools.get.ghcPkgList(haskellExtension.getEnvConfigurer, dependentSandboxes.+:(sandbox))
+  }
+}

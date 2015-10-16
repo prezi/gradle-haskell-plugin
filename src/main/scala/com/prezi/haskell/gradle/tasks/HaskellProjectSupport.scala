@@ -1,7 +1,6 @@
 package com.prezi.haskell.gradle.tasks
 
 import com.prezi.haskell.gradle.extension.HaskellExtension
-import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.Task
 
 /**
@@ -9,9 +8,6 @@ import org.gradle.api.Task
  */
 trait HaskellProjectSupport {
   this: Task =>
-
-  protected def sandbox: Sandbox =
-    getProject.getExtensions.getByType(classOf[Sandbox])
 
   protected def haskellExtension: HaskellExtension =
     getProject.getExtensions.getByType(classOf[HaskellExtension])

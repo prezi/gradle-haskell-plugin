@@ -6,7 +6,11 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Creates the sandbox directory structure for a project
  */
-class SandboxDirectories extends DefaultTask with HaskellProjectSupport {
+class SandboxDirectories
+  extends DefaultTask
+  with HaskellProjectSupport
+  with UsesSandbox {
+
   getOutputs.dir(sandbox.packageDb)
   getOutputs.dir(sandbox.installPrefix)
 
