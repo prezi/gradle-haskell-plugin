@@ -3,7 +3,7 @@ package com.prezi.haskell.gradle.tasks
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Executes cabal freeze
+ * Executes cabal repl or stack ghci
  */
 class REPLTask extends CabalExecTask {
 
@@ -14,6 +14,10 @@ class REPLTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalREPL(cabalContext())
+    if (haskellExtension.getUseStack) {
+      tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "ghci")
+    } else {
+      tools.get.cabalREPL(cabalContext())
+    }
   }
 }

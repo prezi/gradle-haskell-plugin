@@ -53,4 +53,7 @@ trait ProjectExtender {
   def createField[T](name: String, params: Object*)(implicit t: ClassTag[T]): Unit = {
     project.getExtensions.create(name, t.runtimeClass.asInstanceOf[Class[T]], params : _*)
   }
+
+  protected def haskellExtension: HaskellExtension =
+    project.getExtensions.getByType(classOf[HaskellExtension])
 }

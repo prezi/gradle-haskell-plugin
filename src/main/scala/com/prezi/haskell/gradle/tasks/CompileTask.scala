@@ -56,6 +56,19 @@ class CompileTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
+    if (haskellExtension.getUseStack) {
+      runWithStack()
+    } else {
+      runWithCabal()
+    }
+  }
+
+  def runWithStack(): Unit = {
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "setup")
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "build")
+  }
+
+  def runWithCabal(): Unit = {
     val ctx = cabalContext()
     tools.get.cabalInstall(ctx, depsOnly = true)
     tools.get.cabalConfigure(ctx)

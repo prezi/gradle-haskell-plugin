@@ -22,7 +22,7 @@ class HaskellCompilationSupport(
   addCompileTasks
   addTestTasks
   addREPLTask
-  addCabalUpdateTask
+  addUpdateUpdateTask
   extendCleanTask
 }
 

@@ -3,15 +3,15 @@ package com.prezi.haskell.gradle.tasks
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Executes cabal update
+ * Executes stack update
  */
-class UpdateTask extends CabalExecTask {
+class StackUpdateTask extends CabalExecTask {
 
   @TaskAction
   def run(): Unit = {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalUpdate(cabalContext())
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "update")
   }
 }

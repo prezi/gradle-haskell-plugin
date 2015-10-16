@@ -3,7 +3,7 @@ package com.prezi.haskell.gradle.tasks
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Executes cabal test with the proper sandbox chaining
+ * Executes cabal/stack test with the proper sandbox chaining
  */
 class TestTask extends CabalExecTask {
 
@@ -12,6 +12,10 @@ class TestTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.cabalTest(cabalContext())
+    if (haskellExtension.getUseStack) {
+      tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "test")
+    } else {
+      tools.get.cabalTest(cabalContext())
+    }
   }
 }

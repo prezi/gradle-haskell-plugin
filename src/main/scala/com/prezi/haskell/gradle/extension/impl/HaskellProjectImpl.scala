@@ -56,6 +56,8 @@ trait HaskellProjectImpl {
   }
 
   protected def addStackSupport(): Unit = {
-    new StackSupport(project)
+    if (haskellExtension.getUseStack) {
+      new StackSupport(project)
+    }
   }
 }
