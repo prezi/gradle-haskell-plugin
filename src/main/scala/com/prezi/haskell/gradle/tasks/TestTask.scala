@@ -7,6 +7,10 @@ import org.gradle.api.tasks.TaskAction
  */
 class TestTask extends CabalExecTask {
 
+  if (haskellExtension.getUseStack) {
+    dependsOn("generateStackYaml")
+  }
+
   @TaskAction
   def run(): Unit = {
     needsConfigurationSet

@@ -21,6 +21,10 @@ class CompileTask extends CabalExecTask {
   dependsOn("sandbox")
   dependsOn("storeDependentSandboxes")
 
+  if (haskellExtension.getUseStack) {
+    dependsOn("generateStackYaml")
+  }
+
   getOutputs.upToDateWhen { _: AnyRef =>
     (for {
       storeDependentSandboxesTask <- Try { getProject.getTasksByName("storeDependentSandboxes", false).iterator().next() }
