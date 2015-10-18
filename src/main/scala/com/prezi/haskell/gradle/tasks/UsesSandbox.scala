@@ -11,5 +11,5 @@ trait UsesSandbox {
   }
 
   protected def sandbox: Sandbox =
-    getProject.getExtensions.getByType(classOf[Sandbox])
+    Sandbox.createForProject(getProject, haskellExtension.getUseStack)
 }

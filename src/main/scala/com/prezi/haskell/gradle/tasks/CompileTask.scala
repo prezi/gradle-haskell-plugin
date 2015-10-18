@@ -4,7 +4,6 @@ import java.lang.Boolean
 
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.incubating.FunctionalSourceSet
-import com.prezi.haskell.gradle.model.Sandbox
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.{FileVisitDetails, FileVisitor}
 import org.gradle.api.tasks.TaskAction
@@ -49,7 +48,7 @@ class CompileTask extends CabalExecTask {
     }
 
     dependsOn(sourceSet)
-    getOutputs.dir(getProject.getExtensions.getByType(classOf[Sandbox]).root)
+    getOutputs.dir(sandbox.root)
   }
 
   override def onConfigurationSet(cfg: Configuration): Unit = {
