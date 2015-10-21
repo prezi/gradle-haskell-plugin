@@ -8,5 +8,9 @@ import org.gradle.api.tasks.bundling.Zip
 class ZippedSandbox extends Zip with HaskellProjectSupport with UsesSandbox {
 
     getDependsOn.addAll(getProject.getTasksByName("compileMain", false))
-    from(sandbox.root)
+
+    override def copy(): Unit = {
+        from(sandbox.root)
+        super.copy()
+    }
 }
