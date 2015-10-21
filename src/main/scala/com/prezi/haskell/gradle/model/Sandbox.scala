@@ -3,7 +3,10 @@ package com.prezi.haskell.gradle.model
 import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
-import org.gradle.api.Project
+import com.prezi.haskell.gradle.tasks.StackPathTask
+import org.gradle.api.{GradleException, Project}
+
+import scala.io.Source
 
 abstract class Sandbox(val root: File) {
 
@@ -21,7 +24,21 @@ abstract class Sandbox(val root: File) {
 object Sandbox {
   def createForProject(project: Project, useStack: Boolean): Sandbox = {
     if (useStack) {
-      new StackSandbox(project.getProjectDir </> ".stack-work") // TODO
+      val pathCache = StackPathTask.getPathCache(project)
+      if (!pathCache.exists) {
+        throw new GradleException(s"Stack path cache (${pathCache.getAbsolutePath}) does not exists")
+      }
+
+      val localInstallRoot = Source
+        .fromFile(pathCache)
+        .getLines()
+        .find(_.startsWith("local-install-root: "))
+
+      localInstallRoot match {
+        case Some(path) => new StackSandbox(new File(path))
+        case None => throw new GradleException(s"Invalid 'stack path' output (${pathCache.getAbsolutePath})")
+      }
+
     } else {
       new CabalSandbox(project.getBuildDir </> "sandbox")
     }

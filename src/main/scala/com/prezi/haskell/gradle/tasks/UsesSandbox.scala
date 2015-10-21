@@ -7,7 +7,7 @@ trait UsesSandbox {
   this: Task with HaskellProjectSupport =>
 
   if (haskellExtension.getUseStack) {
-    dependsOn("generateStackYaml")
+    dependsOn("stackPath")
   }
 
   protected def sandbox: Sandbox =

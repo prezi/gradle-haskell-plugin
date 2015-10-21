@@ -4,7 +4,7 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.ProjectExtender
 import com.prezi.haskell.gradle.external.{Git, HaskellTools}
-import com.prezi.haskell.gradle.tasks.GenerateStackYaml
+import com.prezi.haskell.gradle.tasks.{StackPathTask, GenerateStackYaml}
 import org.gradle.api.tasks.Delete
 import org.gradle.language.base.plugins.LifecycleBasePlugin._
 
@@ -17,6 +17,10 @@ trait StackSupportImpl {
     genTask.configuration = Some(project.getConfigurations.getByName(Names.mainConfiguration))
     genTask.tools = Some(getField[HaskellTools]("haskellTools"))
     genTask.git = Some(getField[Git]("git"))
+
+    val pathTask = createTask[StackPathTask]("stackPath")
+    pathTask.configuration = Some(project.getConfigurations.getByName(Names.mainConfiguration))
+    pathTask.tools = Some(getField[HaskellTools]("haskellTools"))
   }
 
   protected def extendCleanTask(): Unit = {

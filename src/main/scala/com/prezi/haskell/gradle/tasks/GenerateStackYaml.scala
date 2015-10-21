@@ -46,6 +46,7 @@ class GenerateStackYaml
     val content = new StringBuilder()
     val resolver = s"${haskellExtension.ghcVersion}"
 
+    // TODO: customizeable package flags
     content.append(
       s"""flags:
          |  text:
