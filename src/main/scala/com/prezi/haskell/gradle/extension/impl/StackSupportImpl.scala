@@ -19,7 +19,6 @@ trait StackSupportImpl {
     genTask.git = Some(getField[Git]("git"))
 
     val pathTask = createTask[StackPathTask]("stackPath")
-    pathTask.configuration = Some(project.getConfigurations.getByName(Names.mainConfiguration))
     pathTask.tools = Some(getField[HaskellTools]("haskellTools"))
   }
 

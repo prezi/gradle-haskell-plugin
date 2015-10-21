@@ -3,14 +3,16 @@ package com.prezi.haskell.gradle.tasks
 import java.io.{File, PrintWriter}
 
 import com.prezi.haskell.gradle.ApiHelper._
-import org.gradle.api.Project
+import org.gradle.api.{DefaultTask, Project}
 import org.gradle.api.tasks.TaskAction
 import resource._
 
 /**
  * Execute stack path and store its result
  */
-class StackPathTask extends CabalExecTask {
+class StackPathTask extends DefaultTask
+  with HaskellProjectSupport
+  with UsingHaskellTools {
 
   val outputFile = StackPathTask.getPathCache(getProject)
 
@@ -20,10 +22,9 @@ class StackPathTask extends CabalExecTask {
 
   @TaskAction
   def run(): Unit = {
-    needsConfigurationSet
     needsToolsSet
 
-    val output = tools.get.capturedStack(cabalContext().envConfigurer, getProject.getProjectDir, "path")
+    val output = tools.get.capturedStack(haskellExtension.getEnvConfigurer, getProject.getProjectDir, "path")
     for (writer <- managed(new PrintWriter(outputFile))) {
       writer.write(output)
     }
