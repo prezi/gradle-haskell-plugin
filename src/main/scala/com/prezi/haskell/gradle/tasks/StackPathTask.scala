@@ -2,6 +2,7 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.{File, PrintWriter}
 
+import com.google.common.io.Files
 import com.prezi.haskell.gradle.ApiHelper._
 import org.gradle.api.{DefaultTask, Project}
 import org.gradle.api.tasks.TaskAction
@@ -25,6 +26,7 @@ class StackPathTask extends DefaultTask
     needsToolsSet
 
     val output = tools.get.capturedStack(haskellExtension.getEnvConfigurer, getProject.getProjectDir, "path")
+    Files.createParentDirs(outputFile)
     for (writer <- managed(new PrintWriter(outputFile))) {
       writer.write(output)
     }
