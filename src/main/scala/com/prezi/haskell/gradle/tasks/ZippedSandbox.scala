@@ -10,5 +10,5 @@ import org.gradle.api.tasks.bundling.Zip
 class ZippedSandbox extends Zip with HaskellProjectSupport with UsesSandbox {
 
     getDependsOn.addAll(getProject.getTasksByName("compileMain", false))
-    getProject.task("stackPath").doLast(ApiHelper.asClosure[Task](_ => from(sandbox.root)))
+    getProject.getTasks.findByName("stackPath").doLast(ApiHelper.asClosure[Task](_ => from(sandbox.root)))
 }
