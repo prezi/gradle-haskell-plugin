@@ -26,6 +26,8 @@ class SnapshotVersions(envConfigurer: OptEnvConfigurer, executor : Action[ExecSp
       fetchSource(cacheDir)
       buildSource(cacheDir)
     }
+
+    // TODO: update if not in offline mode
   }
 
   private val cacheDir: File =

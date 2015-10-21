@@ -15,6 +15,8 @@ class GenerateStackYaml
   with UsingHaskellTools
   with UsingGit {
 
+  // TODO: depend on .cabal
+
   private var targetFile_ : Option[File] = None
 
   def targetFile = targetFile_
@@ -45,7 +47,10 @@ class GenerateStackYaml
     val resolver = s"${haskellExtension.ghcVersion}"
 
     content.append(
-      s"""flags: {}
+      s"""flags:
+         |  text:
+         |    integer-simple: false
+         |
          |packages:
          |  - .
          |resolver: $resolver""".stripMargin)
