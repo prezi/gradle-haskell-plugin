@@ -22,8 +22,8 @@ class HaskellProject(
   addConfigurations
   addSandboxTasks
   addCompilation
-  addArtifacts
   addStackSupport
+  addArtifacts
 }
 
 
