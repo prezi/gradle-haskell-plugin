@@ -29,10 +29,12 @@ object Sandbox {
         throw new GradleException(s"Stack path cache (${pathCache.getAbsolutePath}) does not exists")
       }
 
+      val key = "local-install-root: "
       val localInstallRoot = Source
         .fromFile(pathCache)
         .getLines()
-        .find(_.startsWith("local-install-root: "))
+        .find(_.startsWith(key))
+        .map(_.substring(key.length))
 
       localInstallRoot match {
         case Some(path) => new StackSandbox(new File(path))
