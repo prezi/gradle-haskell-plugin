@@ -12,6 +12,7 @@ class ZippedSandbox extends Zip with HaskellProjectSupport with UsesSandbox {
     getInputs.sourceDir(configTimeSandboxRoot)
 
     override protected def createCopyAction: CopyAction = {
+        getLogger.debug("Zipping {}", sandbox.root)
         from(sandbox.root)
         super.createCopyAction
     }
