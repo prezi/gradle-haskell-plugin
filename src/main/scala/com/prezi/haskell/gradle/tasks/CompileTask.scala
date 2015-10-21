@@ -48,7 +48,7 @@ class CompileTask extends CabalExecTask {
     }
 
     dependsOn(sourceSet)
-    getOutputs.dir(sandbox.root)
+    getOutputs.dir(configTimeSandboxRoot)
   }
 
   override def onConfigurationSet(cfg: Configuration): Unit = {
