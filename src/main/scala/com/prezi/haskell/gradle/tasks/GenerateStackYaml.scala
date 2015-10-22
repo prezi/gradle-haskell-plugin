@@ -69,7 +69,8 @@ class GenerateStackYaml
       }
     }
 
-    val snapshotVersions = new SnapshotVersions(haskellExtension.getEnvConfigurer, getProject.exec, tools.get, git.get)
+    val isOffline = getProject.getGradle.getStartParameter.isOffline
+    val snapshotVersions = new SnapshotVersions(isOffline, haskellExtension.getEnvConfigurer, getProject.exec, tools.get, git.get)
     val deps = snapshotVersions.run(haskellExtension.snapshotId, findCabalFile())
 
     if (deps.length > 0) {

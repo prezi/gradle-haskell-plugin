@@ -12,4 +12,8 @@ class Git(executor : Action[ExecSpec] => ExecResult)
   def clone(repoUrl: URL, targetDir: File): Unit = {
     exec(None, None, "git", "clone", repoUrl.toString, targetDir.getAbsolutePath)
   }
+
+  def pull(repoDir: File): Unit = {
+    exec(None, None, "git", "pull")
+  }
 }
