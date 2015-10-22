@@ -30,7 +30,6 @@ class SnapshotVersions(isOffline: Boolean, envConfigurer: OptEnvConfigurer, exec
       updateSource()
       buildSource()
     }
-    // TODO: update if not in offline mode
   }
 
   private val cacheDir: File =
