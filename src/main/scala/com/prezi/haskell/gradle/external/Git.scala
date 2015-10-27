@@ -14,6 +14,6 @@ class Git(executor : Action[ExecSpec] => ExecResult)
   }
 
   def pull(repoDir: File): Unit = {
-    exec(None, None, "git", "pull")
+    exec(Some(repoDir), None, "git", "pull")
   }
 }
