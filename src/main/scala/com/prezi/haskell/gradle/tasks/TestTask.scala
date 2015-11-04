@@ -17,7 +17,12 @@ class TestTask extends CabalExecTask {
     needsToolsSet
 
     if (haskellExtension.getUseStack) {
-      tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "test")
+      val profilingArgs = if (cabalContext().profiling) {
+        List("--executable-profiling", "--library-profiling")
+      } else {
+        List()
+      }
+      tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "test" :: profilingArgs : _*)
     } else {
       tools.get.cabalTest(cabalContext())
     }
