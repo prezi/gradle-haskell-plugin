@@ -9,7 +9,8 @@ import org.gradle.api.tasks.TaskAction
 class SandboxDirectories
   extends DefaultTask
   with HaskellProjectSupport
-  with UsesSandbox {
+  with UsesSandbox
+  with TaskLogging {
 
   getOutputs.dir(sandbox.packageDb)
   getOutputs.dir(sandbox.installPrefix)
@@ -17,10 +18,10 @@ class SandboxDirectories
   @TaskAction
   def run(): Unit = {
 
-    getLogger.debug("Creating directory {}", sandbox.packageDb)
+    debug(s"Creating directory ${sandbox.packageDb}")
     sandbox.packageDb.mkdirs()
 
-    getLogger.debug("Creating directory {}", sandbox.installPrefix)
+    debug(s"Creating directory ${sandbox.installPrefix}")
     sandbox.installPrefix.mkdirs()
   }
 }

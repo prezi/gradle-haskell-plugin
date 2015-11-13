@@ -1,56 +1,38 @@
-package com.prezi.haskell.gradle.model
+package com.prezi.haskell.gradle.model.sandboxstore
 
 import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
-import com.prezi.haskell.gradle.Profiling._
+import com.prezi.haskell.gradle.Profiling.measureTime
 import com.prezi.haskell.gradle.extension.HaskellExtension
 import com.prezi.haskell.gradle.external.{HaskellTools, SandFix}
-import com.prezi.haskell.gradle.model.SandBoxStoreResult.{AlreadyExists, Created}
+import com.prezi.haskell.gradle.io.packers.Unpacker
+import com.prezi.haskell.gradle.model.{Sandbox, SandboxArtifact}
 import org.gradle.api.{GradleException, Project}
-import org.gradle.api.file.CopySpec
 
-trait SandboxStore {
+/**
+  * Sandbox store implementation with the following properties
+  *
+  * - It stores the sandboxes in a subdirectory of a Gradle project's build directory
+  * - Runs the SandFix tool on newly extracted sandboxes
+  *
+  * @param project The root project where the sandboxes will be stored
+  * @param sandFixPath Path to the SandFix tool
+  * @param unpacker Zip unpacker to be used to extract sandboxes
+  * @param exts
+  * @param tools
+  * @param useStack Enables/disables stack mode
+  */
+class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker: Unpacker, exts: => HaskellExtension, tools: => HaskellTools, useStack: Boolean) extends SandboxStore {
 
-  def root: File
-  def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact]): SandBoxStoreResult
-  def find(depSandbox: SandboxArtifact): Sandbox
-  def get(sandbox: SandboxArtifact): Sandbox
-}
-
-sealed trait SandBoxStoreResult {
-  def toNormalizedString:String
-}
-
-object SandBoxStoreResult {
-
-  def apply(str:String): SandBoxStoreResult = {
-    str match {
-      case "Created" => Created
-      case "AlreadyExists" => AlreadyExists
-      case s => throw sys.error(s"Illegal SandBoxStoreResult: $s")
-    }
-  }
-
-  case object Created extends SandBoxStoreResult {
-    override def toNormalizedString: String = "Created"
-  }
-  case object AlreadyExists extends SandBoxStoreResult {
-    override def toNormalizedString: String = "AlreadyExists"
-  }
-}
-
-class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => HaskellExtension, tools: => HaskellTools, useStack: Boolean) extends SandboxStore {
-
-  val root = project.getBuildDir
-
-  private def finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
+  private val root = project.getBuildDir
+  private lazy val finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
+  private lazy val sandFix = new SandFix(project.exec, finalSandFixPath </> "SandFix.hs", tools)
 
   override def find(depSandbox: SandboxArtifact): Sandbox =
-    if (useStack) {
-      depSandbox.toStackSandbox(root)
-    } else {
-      depSandbox.toCabalSandbox(root)
+    useStack match {
+      case true => depSandbox.toStackSandbox(root, useStack)
+      case false => depSandbox.toCabalSandbox(root, useStack)
     }
 
   override def get(depSandbox: SandboxArtifact): Sandbox = {
@@ -93,7 +75,6 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
 
     val envConfigurer = exts.getEnvConfigurer
     val (_, elapsed) = measureTime {
-      val sandFix = new SandFix(project.exec, finalSandFixPath </> "SandFix.hs", tools)
       sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList)
     }
     project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
@@ -108,13 +89,9 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], exts: => 
     project.getLogger.info("Extracting dependent sandbox {} to {}", depSandbox.name, sandbox.extractionRoot.getAbsolutePath)
 
     val (_, elapsed) = measureTime {
-      project.copy(asClosure { spec: CopySpec =>
-        spec.from(project.zipTree(depSandbox.artifact))
-        spec.into(sandbox.extractionRoot)
-      })
+      unpacker.unpack(depSandbox.artifact, sandbox.extractionRoot)
     }
 
-    val msg = s"Extracted dependent sandbox ${depSandbox.name} to ${sandbox.extractionRoot.getAbsolutePath} in $elapsed s"
-    project.getLogger.info(msg, List() : _*)
+    project.getLogger.info(s"Extracted dependent sandbox ${depSandbox.name} to ${sandbox.extractionRoot.getAbsolutePath} in $elapsed s", List() : _*)
   }
 }

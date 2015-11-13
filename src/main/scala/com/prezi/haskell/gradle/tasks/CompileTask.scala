@@ -4,6 +4,7 @@ import java.lang.Boolean
 
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.incubating.FunctionalSourceSet
+import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.{FileVisitDetails, FileVisitor}
 import org.gradle.api.tasks.TaskAction
@@ -31,7 +32,7 @@ class CompileTask extends CabalExecTask {
       isAnySandboxUpdated <- Try { storeDependentSandboxesTask.asInstanceOf[StoreDependentSandboxes].isAnySandboxUpdated }
     } yield isAnySandboxUpdated) match {
       case Success(bool) => new Boolean(!bool)
-      case Failure(e) => throw new RuntimeException("Failed to get storeDependentSandboxes.isAnySandboxUpdated!", e)
+      case Failure(e) => throw new GradleException("Failed to get storeDependentSandboxes.isAnySandboxUpdated!", e)
     }
   }
 

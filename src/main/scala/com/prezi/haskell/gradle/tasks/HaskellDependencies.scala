@@ -1,6 +1,7 @@
 package com.prezi.haskell.gradle.tasks
 
-import com.prezi.haskell.gradle.model.{SandboxArtifact, Sandbox, SandboxStore}
+import com.prezi.haskell.gradle.model.sandboxstore.SandboxStore
+import com.prezi.haskell.gradle.model.{SandboxArtifact, Sandbox}
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 
@@ -32,7 +33,7 @@ trait HaskellDependencies {
   }
 
   protected def needsConfigurationSet: Unit = {
-    if (!configuration.isDefined) {
+    if (configuration.isEmpty) {
       throw new IllegalStateException("configuration is not specified")
     }
   }

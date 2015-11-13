@@ -14,6 +14,7 @@ class REPLTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
+    // TODO: check how scalaConsole task works in the gradle scala plugin
     if (haskellExtension.getUseStack) {
       tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "ghci")
     } else {

@@ -16,12 +16,13 @@ class GenerateStackYaml
   with UsingGit {
 
   // TODO: depend on .cabal
+  dependsOn("storeDependentSandboxes")
 
-  private var targetFile_ : Option[File] = None
+  private var _targetFile : Option[File] = None
 
-  def targetFile = targetFile_
+  def targetFile = _targetFile
   def targetFile_=(value: Option[File]): Unit = {
-    targetFile_ = value
+    _targetFile = value
 
     if (value.isDefined) {
       getOutputs.file(value.get)
@@ -34,7 +35,7 @@ class GenerateStackYaml
     needsGitSet
     needsToolsSet
 
-    if (!targetFile.isDefined) {
+    if (targetFile.isEmpty) {
       throw new IllegalStateException("targetFile is not specified")
     }
 
@@ -51,8 +52,10 @@ class GenerateStackYaml
       s"""flags:
          |  text:
          |    integer-simple: false
-         |
-         |packages:
+         |""".stripMargin)
+
+    content.append(
+      s"""packages:
          |  - .
          |resolver: $resolver""".stripMargin)
 

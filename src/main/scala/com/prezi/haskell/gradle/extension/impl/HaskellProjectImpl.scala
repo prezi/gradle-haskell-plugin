@@ -4,7 +4,8 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension._
 import com.prezi.haskell.gradle.external.{Git, HaskellTools}
-import com.prezi.haskell.gradle.model.ProjectSandboxStore
+import com.prezi.haskell.gradle.io.packers.GradleZipPacker
+import com.prezi.haskell.gradle.model.sandboxstore.ProjectSandboxStore
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator
 
@@ -20,8 +21,10 @@ trait HaskellProjectImpl {
   protected def addFields(): Unit = {
 
     val tools = new HaskellTools(project.exec)
+    val unpacker = new GradleZipPacker(project)
+    val sandboxStore = new ProjectSandboxStore(project.getRootProject, Some(sandFixPath), unpacker, getField[HaskellExtension]("haskell"), tools, haskellExtension.getUseStack)
     addField("haskellTools", tools)
-    addField("sandboxStore", new ProjectSandboxStore(project.getRootProject, Some(sandFixPath), getField[HaskellExtension]("haskell"), tools, haskellExtension.getUseStack))
+    addField("sandboxStore", sandboxStore)
 
     val git = new Git(project.exec)
     addField("git", git)

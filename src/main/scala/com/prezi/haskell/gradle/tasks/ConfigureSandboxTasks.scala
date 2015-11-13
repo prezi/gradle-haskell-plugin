@@ -16,7 +16,7 @@ class ConfigureSandboxTasks extends DefaultTask with HaskellDependencies {
   def run(): Unit = {
     needsConfigurationSet
 
-    if (!storeTask.isDefined) {
+    if (storeTask.isEmpty) {
       throw new IllegalStateException("extractTask is not set")
     }
 

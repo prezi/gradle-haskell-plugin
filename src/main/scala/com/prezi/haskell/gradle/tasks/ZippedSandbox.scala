@@ -6,13 +6,17 @@ import org.gradle.api.tasks.bundling.Zip
 /**
  * Zips the projects sandbox to create its main artifact
  */
-class ZippedSandbox extends Zip with HaskellProjectSupport with UsesSandbox {
+class ZippedSandbox
+  extends Zip
+  with HaskellProjectSupport
+  with UsesSandbox
+  with TaskLogging {
 
     getDependsOn.addAll(getProject.getTasksByName("compileMain", false))
     getInputs.sourceDir(configTimeSandboxRoot)
 
     override protected def createCopyAction: CopyAction = {
-        getLogger.debug("Zipping {}", sandbox.root)
+        debug(s"Zipping ${sandbox.root}")
         from(sandbox.root)
         super.createCopyAction
     }

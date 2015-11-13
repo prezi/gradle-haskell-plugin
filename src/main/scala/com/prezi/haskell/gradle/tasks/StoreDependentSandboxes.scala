@@ -3,23 +3,31 @@ package com.prezi.haskell.gradle.tasks
 import java.io.File
 import java.util
 
-import com.prezi.haskell.gradle.model.{SandBoxStoreResult, SandboxArtifact}
+import com.prezi.haskell.gradle.model.SandboxArtifact
+import com.prezi.haskell.gradle.model.sandboxstore.SandBoxStoreResult
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{Configuration, ResolvedDependency}
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.TaskAction
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
-class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
+class StoreDependentSandboxes
+  extends DefaultTask
+  with HaskellDependencies
+  with TaskLogging {
 
   dependsOn("copySandFix")
 
   var sandFixPath: Option[File] = None
 
   private var _isAnySandboxUpdated: Boolean = false
-
   def isAnySandboxUpdated: Boolean = _isAnySandboxUpdated
+  private def isAnySandboxUpdated_=(value: Boolean): Unit = {
+    _isAnySandboxUpdated = value
+    debug(s"isAnySandboxUpdated: ${_isAnySandboxUpdated}")
+  }
 
   override def onConfigurationSet(cfg: Configuration): Unit = {
     dependsOn(cfg)
@@ -29,28 +37,20 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
   def run(): Unit = {
     needsConfigurationSet
 
-    getLogger.info("Storing dependent sandboxes for {}", getProject.getName)
+    info(s"Storing dependent sandboxes for ${getProject.getName}")
     val storeDependencyResults =
       for (dependency <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) yield {
         storeDependency(dependency)
       }
 
-    if (getLogger.isDebugEnabled) {
-      getLogger.log(LogLevel.DEBUG, "StoreDependencyResults:")
-      storeDependencyResults foreach { case (sandboxArtifacts, storeResult) =>
-        getLogger.debug("{}: {}", sandboxArtifacts, storeResult)
-      }
-    }
-
-    _isAnySandboxUpdated = storeDependencyResults.exists { _._2 == SandBoxStoreResult.Created }
-
-    getLogger.debug("isAnySandboxUpdated: {}", isAnySandboxUpdated)
+    dumpSandboxStoreResults(storeDependencyResults)
+    isAnySandboxUpdated = storeDependencyResults.exists { _._2 == SandBoxStoreResult.Created }
   }
 
   def storeDependency(dependency: ResolvedDependency, prefix: String = ""): (Set[SandboxArtifact], SandBoxStoreResult) = {
+    info(s"${prefix}Dependency ${dependency.getName}")
 
-    getLogger.info("{}Dependency {}", prefix, dependency.getName)
-
+    // Storing child dependencies
     val (depSandboxes: Set[SandboxArtifact], aggregatedStoreResult: SandBoxStoreResult) =
       foldStoreDependencyResults(
         (for {
@@ -59,23 +59,21 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
         } yield storeDependencyResult).toSet
       )
 
+    // Collecting all the dependent sandbox artifacts
     val sandboxes = dependency.getAllModuleArtifacts
       .asScala
       .map(artifact => new SandboxArtifact(artifact.getName, artifact.getFile))
       .toSet
 
+    // Storing the sandbox and its dependent sandboxes
     val sandboxStoreResults =
       for (sandbox <- sandboxes) yield {
         val res = memoizedStoreDependencyInStore(sandbox, depSandboxes)
-        getLogger.debug("{} <- memoizedStoreDependencyInStore({}, {})", res, sandbox, depSandboxes)
+        debug(s"$res <- memoizedStoreDependencyInStore($sandbox, $depSandboxes)")
         res
       }
 
-    (sandboxes,
-      if (sandboxStoreResults.contains(SandBoxStoreResult.Created) || aggregatedStoreResult == SandBoxStoreResult.Created)
-        SandBoxStoreResult.Created
-      else
-        SandBoxStoreResult.AlreadyExists)
+    (sandboxes, sandboxStoreResults.foldLeft(aggregatedStoreResult)(aggregateStoreResult))
   }
 
   def foldStoreDependencyResults(results: Set[(Set[SandboxArtifact], SandBoxStoreResult)]): (Set[SandboxArtifact], SandBoxStoreResult) =
@@ -105,7 +103,6 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
     }
   }
 
-
   def getOrSetRootProjectProperty[V <: Object](propertyName: String, propertyValue: => V): V = {
     val rootProject = getProject.getRootProject
 
@@ -113,9 +110,28 @@ class StoreDependentSandboxes extends DefaultTask with HaskellDependencies {
       rootProject.getProperties.get(propertyName).asInstanceOf[V]
     } else {
       val value = propertyValue
-      getLogger.debug("Setting root project property: [key = {}, value = {}]", propertyName, value)
+
+      debug(s"Setting root project property: [key = $propertyName, value = $value]")
+
       rootProject.getExtensions.add(propertyName, value)
       value
+    }
+  }
+
+  private def aggregateStoreResult(aggregatedStoreResult: SandBoxStoreResult, newResult: SandBoxStoreResult): SandBoxStoreResult = {
+    if (aggregatedStoreResult == SandBoxStoreResult.Created || newResult == SandBoxStoreResult.Created) {
+      SandBoxStoreResult.Created
+    } else {
+      SandBoxStoreResult.AlreadyExists
+    }
+  }
+
+  private def dumpSandboxStoreResults(storeDependencyResults: mutable.Set[(Set[SandboxArtifact], SandBoxStoreResult)]): Unit = {
+    if (getLogger.isDebugEnabled) {
+      getLogger.log(LogLevel.DEBUG, "StoreDependencyResults:")
+      storeDependencyResults foreach { case (sandboxArtifacts, storeResult) =>
+        debug(s"$sandboxArtifacts: $storeResult")
+      }
     }
   }
 }
