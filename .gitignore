@@ -9,3 +9,4 @@ target
 *.ipr
 *.iws
 *.orig
+.stack-work
