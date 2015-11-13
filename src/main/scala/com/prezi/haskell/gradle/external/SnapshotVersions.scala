@@ -18,7 +18,7 @@ class SnapshotVersions(isOffline: Boolean, envConfigurer: OptEnvConfigurer, exec
     ensureToolExists()
     val output = haskellTools.capturedStack(envConfigurer, cacheDir, "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
 
-    output.split('\n')
+    output.split('\n').map(_.trim).filter(_.length > 0)
   }
 
   private def ensureToolExists(): Unit = {

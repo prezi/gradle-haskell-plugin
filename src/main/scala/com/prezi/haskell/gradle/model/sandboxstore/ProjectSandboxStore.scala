@@ -25,14 +25,16 @@ import org.gradle.api.{GradleException, Project}
   */
 class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker: Unpacker, exts: => HaskellExtension, tools: => HaskellTools, useStack: Boolean) extends SandboxStore {
 
+  project.getLogger.debug(s"ProjectSandboxStore initialized, useStack={}", useStack)
+
   private val root = project.getBuildDir
   private lazy val finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
   private lazy val sandFix = new SandFix(project.exec, finalSandFixPath </> "SandFix.hs", tools)
 
   override def find(depSandbox: SandboxArtifact): Sandbox =
     useStack match {
-      case true => depSandbox.toStackSandbox(root, useStack)
-      case false => depSandbox.toCabalSandbox(root, useStack)
+      case true => depSandbox.toStackSandbox(root)
+      case false => depSandbox.toCabalSandbox(root)
     }
 
   override def get(depSandbox: SandboxArtifact): Sandbox = {

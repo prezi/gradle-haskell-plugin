@@ -26,7 +26,7 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
     val dbArgs = others.map(child => child.asPackageDbArg)
     val args = List(
       sandbox.root.getAbsolutePath,
-      "packages",
+      sandbox.packageDb.getName,
       "--package-db=global") ::: dbArgs.toList
 
     executor(asAction({ spec: ExecSpec =>

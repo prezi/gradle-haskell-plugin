@@ -1,7 +1,7 @@
 package com.prezi.haskell.gradle.tasks
 
 import java.io.File
-
+import scala.collection.JavaConverters._
 import com.prezi.haskell.gradle.external.SnapshotVersions
 import com.prezi.haskell.gradle.model.Sandbox
 import org.apache.commons.io.FileUtils
@@ -13,16 +13,17 @@ class GenerateStackYaml
   with HaskellProjectSupport
   with HaskellDependencies
   with UsingHaskellTools
-  with UsingGit {
+  with UsingGit
+  with TaskLogging {
 
   // TODO: depend on .cabal
   dependsOn("storeDependentSandboxes")
 
-  private var _targetFile : Option[File] = None
+  private var targetFile_ : Option[File] = None
 
-  def targetFile = _targetFile
+  def targetFile = targetFile_
   def targetFile_=(value: Option[File]): Unit = {
-    _targetFile = value
+    targetFile_ = value
 
     if (value.isDefined) {
       getOutputs.file(value.get)
@@ -39,6 +40,7 @@ class GenerateStackYaml
       throw new IllegalStateException("targetFile is not specified")
     }
 
+    debug(s"GenerateStackYaml dependentSandboxes: $dependentSandboxes")
     val yamlFile = generateContent(dependentSandboxes)
     FileUtils.writeStringToFile(targetFile.get, yamlFile)
   }
@@ -47,12 +49,23 @@ class GenerateStackYaml
     val content = new StringBuilder()
     val resolver = s"${haskellExtension.ghcVersion}"
 
-    // TODO: customizeable package flags
-    content.append(
-      s"""flags:
-         |  text:
-         |    integer-simple: false
-         |""".stripMargin)
+    val pkgFlags = haskellExtension
+      .getPackageFlags
+      .asScala
+      .filter(!_._2.isEmpty)
+
+    if (pkgFlags.nonEmpty) {
+      content.append("flags:\n")
+
+      for ((pkgName, jflags) <- pkgFlags) {
+        val flags = jflags.asScala
+
+        content.append(s"  $pkgName:\n")
+        for ((k, v) <- flags) {
+          content.append(s"    $k: $v\n")
+        }
+      }
+    }
 
     content.append(
       s"""packages:

@@ -167,6 +167,31 @@ artifacts {
     archives sourcesJar
 }
 
+task integTestBundle {
+    dependsOn jar
+
+    doLast {
+        def source_resources = 'src/main/resources'
+
+        def destination = 'build/integ-test-bundle'
+        delete destination
+        new File(destination).mkdirs()
+
+        def lib = new File(destination, "lib")
+        lib.mkdirs()
+        copy {
+            into lib
+            from configurations.runtime
+        }
+        copy {
+            into lib
+            from 'build/libs'
+            include "gradle-haskell-plugin-${version}.jar"
+        }
+    }
+}
+
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.4'
 }

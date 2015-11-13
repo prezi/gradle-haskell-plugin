@@ -1,5 +1,7 @@
 package com.prezi.haskell.gradle.extension
 
+import java.util
+
 import com.prezi.haskell.gradle.extension.HaskellExtension.PropertyKey
 import com.prezi.haskell.gradle.external.HaskellTools.{Cabal122, CabalVersion}
 import com.prezi.haskell.gradle.external.ToolsBase.{EnvConfigurer, OptEnvConfigurer}
@@ -21,6 +23,8 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   private var cabalConfigFile_ : Option[String] =
     if (project.hasProperty(PropertyKey.CabalConfigFile)) Some(project.getProperties.get(PropertyKey.CabalConfigFile).toString)
     else None
+  private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
+    new util.HashMap[String, java.util.Map[String, String]]()
   private var envConfigurer_ : OptEnvConfigurer = None
 
   def getSources = sources_
@@ -74,6 +78,11 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   }
   def snapshotId(value: String): Unit = setSnapshotId(value)
 
+  def packageFlags = packageFlags_
+  def getPackageFlags = packageFlags_
+  def setPackageFlags(value: java.util.Map[String, java.util.Map[String, String]]): Unit = {
+    packageFlags_ = value
+  }
 }
 
 object HaskellExtension {

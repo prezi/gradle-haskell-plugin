@@ -1,0 +1,15 @@
+
+dependencies {
+	main project(path: ":lib1", configuration: "main")
+	main project(path: ":lib2", configuration: "main")
+}
+
+haskell {
+	packageFlags["text"] = ["integer-simple": "false"]
+}
+
+//content.append(
+//      s"""flags:
+//         |  text:
+//         |    integer-simple: false
+//         |""".stripMargin)

@@ -12,18 +12,14 @@ case class SandboxArtifact(name: String, artifact: File) {
   private def calculateChecksum: String =
     (managed(new FileInputStream(artifact)) map DigestUtils.md5Hex).opt.get
 
+  private val depsCabal = "deps"
+  private val depsStack = "deps-stack"
 
-  def toCabalSandbox(root: File, useStack: Boolean): Sandbox =
-    new CabalSandbox(root </> "deps" </> getBaseName(name) </> calculateChecksum)
+  def toCabalSandbox(root: File): Sandbox =
+    new CabalSandbox(root </> depsCabal </> getBaseName(name) </> calculateChecksum)
 
-  def toStackSandbox(root: File, useStack: Boolean): Sandbox =
-    new StackSandbox(root </> "deps" </> getBaseName(name) </> calculateChecksum)
+  def toStackSandbox(root: File): Sandbox =
+    new StackSandbox(root </> depsStack </> getBaseName(name) </> calculateChecksum)
 
   def toNormalizedString = name + "#" + artifact.getAbsoluteFile
-
-  private def depsName(useStack: Boolean): String =
-    useStack match {
-      case true => "deps-stack"
-      case false => "deps"
-    }
 }

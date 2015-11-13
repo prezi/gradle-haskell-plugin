@@ -22,11 +22,11 @@ class StoreDependentSandboxes
 
   var sandFixPath: Option[File] = None
 
-  private var _isAnySandboxUpdated: Boolean = false
-  def isAnySandboxUpdated: Boolean = _isAnySandboxUpdated
+  private var isAnySandboxUpdated_ : Boolean = false
+  def isAnySandboxUpdated: Boolean = isAnySandboxUpdated_
   private def isAnySandboxUpdated_=(value: Boolean): Unit = {
-    _isAnySandboxUpdated = value
-    debug(s"isAnySandboxUpdated: ${_isAnySandboxUpdated}")
+    isAnySandboxUpdated_ = value
+    debug(s"isAnySandboxUpdated: ${isAnySandboxUpdated_}")
   }
 
   override def onConfigurationSet(cfg: Configuration): Unit = {
