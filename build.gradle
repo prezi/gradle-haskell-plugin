@@ -230,4 +230,5 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.4'
 }
 
-check.dependsOn systest
+// systest requires working haskell/stack on CI nodes, so its disabled for now
+// check.dependsOn systest
