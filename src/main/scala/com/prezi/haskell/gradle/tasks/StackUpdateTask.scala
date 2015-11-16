@@ -12,6 +12,6 @@ class StackUpdateTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "update")
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "--no-system-ghc", "update")
   }
 }
