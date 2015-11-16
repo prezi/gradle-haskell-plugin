@@ -7,7 +7,8 @@ import org.apache.commons.io.FileUtils
 
 trait UsingTestProjects {
 
-  private lazy val testProjectsDirProp = System.getProperty("test-projects-dir")
+  private val testProjectsDirProp = System.getProperty("test-projects-dir")
+  private val pluginBuildDirProp = System.getProperty("plugin-build-dir")
 
   protected def withCleanWorkingDir[R](action: File => R): R = {
     val tempDir = Files.createTempDir()
@@ -30,7 +31,7 @@ trait UsingTestProjects {
   protected def gradle(root: File, args: String*): Boolean = {
     val process = new ProcessBuilder()
       .inheritIO()
-      .command("gradle" +: "--no-daemon" +: args : _*)
+      .command("gradle" +: "--no-daemon" +: s"-PpluginBuildDir=$pluginBuildDirProp" +: args : _*)
       .directory(root)
       .start()
     process.waitFor() == 0

@@ -1,6 +1,8 @@
+pluginBuildDir = getProperty("pluginBuildDir")
+
 buildscript {
 	dependencies {
-		classpath fileTree(dir: '/Users/vigoo/GitHub/gradle-haskell-plugin/build/integ-test-bundle/lib', include: '*.jar') // TODO
+		classpath fileTree(dir: "$pluginBuildDir/integ-test-bundle/lib", include: '*.jar')
 	}
 }
 

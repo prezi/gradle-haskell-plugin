@@ -211,6 +211,7 @@ task systest(type: Test) {
     classpath += sourceSets.systest.runtimeClasspath
 
     systemProperty "test-projects-dir", "$projectDir/src/test-projects"
+    systemProperty "plugin-build-dir", "$buildDir"
 
     reports {
         html {
