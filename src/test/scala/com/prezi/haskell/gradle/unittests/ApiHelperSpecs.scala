@@ -1,11 +1,15 @@
-package com.prezi.haskell.gradle
+package com.prezi.haskell.gradle.unittests
 
 import java.io.File
 
+import com.prezi.haskell.gradle.ApiHelper
 import org.gradle.internal.reflect.Instantiator
+import org.junit.runner.RunWith
 import org.specs2.mock.Mockito
 import org.specs2.mutable.SpecificationWithJUnit
+import org.specs2.runner.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class ApiHelperSpecs extends SpecificationWithJUnit with Mockito {
 
   "asAction" should {

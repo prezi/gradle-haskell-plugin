@@ -1,9 +1,12 @@
 package com.prezi.haskell.gradle.tasks
 
+import com.prezi.haskell.gradle.ModuleId
 import com.prezi.haskell.gradle.model.sandboxstore.SandboxStore
-import com.prezi.haskell.gradle.model.{SandboxArtifact, Sandbox}
+import com.prezi.haskell.gradle.model.{Sandbox, SandboxArtifact}
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.gradle.api.artifacts.result.{DependencyResult, ResolvedDependencyResult}
 
 import scala.collection.JavaConverters._
 
@@ -40,9 +43,36 @@ trait HaskellDependencies {
 
   protected def store: SandboxStore = getProject.getExtensions.findByName("sandboxStore").asInstanceOf[SandboxStore]
 
-  protected def dependentSandboxes: List[Sandbox] =
-    configuration.get.getResolvedConfiguration.getResolvedArtifacts
+  private def collectSandboxes(node: DependencyResult, results: List[ComponentIdentifier]): List[ComponentIdentifier] = {
+    node match {
+      case resolvedDep: ResolvedDependencyResult =>
+        val childDeps = resolvedDep.getSelected.getDependencies.asScala
+        val childIds = childDeps.foldLeft(List[ComponentIdentifier]()) { (r, d) => collectSandboxes(d, r) }
+        results ::: childIds ::: List(resolvedDep.getSelected.getId)
+      case _ =>
+        results
+    }
+  }
+
+  protected def dependentSandboxes: List[Sandbox] = {
+    val result = configuration.get.getIncoming.getResolutionResult
+    val orderedIds = result.getRoot.getDependencies
       .asScala
-      .map(artifact => store.find(new SandboxArtifact(artifact.getName, artifact.getFile)))
-      .toList
+      .foldLeft(List[ComponentIdentifier]()) { (results, dep) => collectSandboxes(dep, results) }
+      .distinct
+
+    val artifacts = configuration.get.getResolvedConfiguration.getResolvedArtifacts
+      .asScala
+      .map(artifact => (ModuleId.fromModuleVersionIdentifier(artifact.getModuleVersion.getId), artifact.getFile))
+      .toMap
+
+    val zips = for (id <- orderedIds;
+         modId = ModuleId.fromComponentIdentifier(getProject.getRootProject, id))
+      yield artifacts.get(modId) match {
+        case Some(file) => Some(store.find(new SandboxArtifact(modId.name, file)))
+        case None => None
+      }
+
+    zips.filter(_.isDefined).map(_.get)
+  }
 }

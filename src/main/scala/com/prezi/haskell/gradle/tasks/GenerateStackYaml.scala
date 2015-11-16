@@ -100,6 +100,10 @@ class GenerateStackYaml
       content.append("extra-deps: []\n")
     }
 
+    val binPath = new File(new File(new File(getProject.getBuildDir, "sandbox"), "files"), "bin")
+    binPath.mkdirs()
+    content.append(s"local-bin-path: ${binPath.getAbsolutePath}")
+
     content.mkString
   }
 

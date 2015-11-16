@@ -3,7 +3,9 @@ package com.prezi.haskell.gradle
 import java.io.File
 
 import groovy.lang.Closure
-import org.gradle.api.Action
+import org.gradle.api.{Project, Action}
+import org.gradle.api.artifacts.ModuleVersionIdentifier
+import org.gradle.api.artifacts.component.{ProjectComponentIdentifier, ModuleComponentIdentifier, ComponentIdentifier}
 import org.gradle.internal.reflect.Instantiator
 
 import scala.language.implicitConversions
@@ -47,5 +49,23 @@ object ApiHelper {
 
   class FileExt(file: File) {
     def </> (subPath: String): File = new File(file, subPath)
+  }
+}
+
+case class ModuleId(group: String, name: String, version: String) {
+  def toDisplayName: String =
+    s"$group-$name-$version"
+}
+
+case object ModuleId {
+  def fromModuleVersionIdentifier(id: ModuleVersionIdentifier): ModuleId =
+    ModuleId(id.getGroup, id.getName, id.getVersion)
+
+  def fromComponentIdentifier(rootProject: Project, id: ComponentIdentifier): ModuleId = id match {
+    case mcid: ModuleComponentIdentifier =>
+      ModuleId(mcid.getGroup, mcid.getModule, mcid.getVersion)
+    case pcid: ProjectComponentIdentifier =>
+      val project = rootProject.findProject(pcid.getProjectPath)
+      ModuleId(project.getGroup.asInstanceOf[String], project.getName, project.getVersion.asInstanceOf[String])
   }
 }
