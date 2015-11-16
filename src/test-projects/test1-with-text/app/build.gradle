@@ -7,9 +7,3 @@ dependencies {
 haskell {
 	packageFlags["text"] = ["integer-simple": "false"]
 }
-
-//content.append(
-//      s"""flags:
-//         |  text:
-//         |    integer-simple: false
-//         |""".stripMargin)

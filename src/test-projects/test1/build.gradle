@@ -1,0 +1,11 @@
+pluginBuildDir = getProperty("pluginBuildDir")
+
+buildscript {
+	dependencies {
+		classpath fileTree(dir: "$pluginBuildDir/integ-test-bundle/lib", include: '*.jar')
+	}
+}
+
+allprojects {
+	apply plugin: "haskell"
+}

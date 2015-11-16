@@ -210,6 +210,8 @@ task systest(type: Test) {
     testClassesDir = sourceSets.systest.output.classesDir
     classpath += sourceSets.systest.runtimeClasspath
 
+    testLogging.showStandardStreams = true
+    systemProperty "specs2.commandline", "console"
     systemProperty "test-projects-dir", "$projectDir/src/test-projects"
     systemProperty "plugin-build-dir", "$buildDir"
 
@@ -222,8 +224,6 @@ task systest(type: Test) {
             destination = "$buildDir/reports/systests"
         }
     }
-
-    testLogging.showStandardStreams = true
 }
 
 task wrapper(type: Wrapper) {

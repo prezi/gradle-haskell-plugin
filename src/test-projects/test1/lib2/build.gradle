@@ -1,0 +1,4 @@
+
+dependencies {
+	main project(path: ":lib1", configuration: "main")
+}

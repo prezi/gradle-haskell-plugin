@@ -8,7 +8,10 @@ import scala.collection.JavaConverters._
 /**
  * Configures the @StoreDependentSandboxes task's inputs and outputs
  */
-class ConfigureSandboxTasks extends DefaultTask with HaskellDependencies {
+class ConfigureSandboxTasks
+  extends DefaultTask
+  with HaskellDependencies
+  with TaskLogging {
 
   var storeTask: Option[StoreDependentSandboxes] = None
 
@@ -22,6 +25,8 @@ class ConfigureSandboxTasks extends DefaultTask with HaskellDependencies {
 
     for (artifact <- configuration.get.getResolvedConfiguration.getResolvedArtifacts.asScala) {
       storeTask.get.getInputs.file(artifact.getFile)
+
+      debug(s"Adding ${artifact.getFile} as input for $storeTask")
     }
   }
 }

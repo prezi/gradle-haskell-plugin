@@ -10,3 +10,4 @@ target
 *.iws
 *.orig
 .stack-work
+stack.yaml
