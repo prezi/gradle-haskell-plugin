@@ -2,11 +2,14 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 import scala.collection.JavaConverters._
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.SnapshotVersions
 import com.prezi.haskell.gradle.model.Sandbox
 import org.apache.commons.io.FileUtils
 import org.gradle.api.{GradleException, DefaultTask}
 import org.gradle.api.tasks.TaskAction
+
+import scala.util.{Failure, Success, Try}
 
 class GenerateStackYaml
   extends DefaultTask
@@ -14,10 +17,10 @@ class GenerateStackYaml
   with HaskellDependencies
   with UsingHaskellTools
   with UsingGit
+  with DependsOnStoreDependentSandboxes
   with TaskLogging {
 
   // TODO: depend on .cabal
-  dependsOn("storeDependentSandboxes")
 
   private var targetFile_ : Option[File] = None
 

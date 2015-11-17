@@ -1,39 +1,26 @@
 package com.prezi.haskell.gradle.tasks
 
-import java.lang.Boolean
-
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.incubating.FunctionalSourceSet
-import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.{FileVisitDetails, FileVisitor}
 import org.gradle.api.tasks.TaskAction
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
 
 /**
  * Executes cabal install with the proper sandbox chaining
  */
-class CompileTask extends CabalExecTask {
-  val buildDir = getProject.getProjectDir </> "dist"
+class CompileTask
+  extends CabalExecTask
+  with DependsOnStoreDependentSandboxes {
 
-  dependsOn("storeDependentSandboxes")
+  val buildDir = getProject.getProjectDir </> "dist"
 
   if (haskellExtension.getUseStack) {
     dependsOn("generateStackYaml")
   } else {
     dependsOn("sandbox")
-  }
-
-  getOutputs.upToDateWhen { _: AnyRef =>
-    (for {
-      storeDependentSandboxesTask <- Try { getProject.getTasksByName("storeDependentSandboxes", false).iterator().next() }
-      isAnySandboxUpdated <- Try { storeDependentSandboxesTask.asInstanceOf[StoreDependentSandboxes].isAnySandboxUpdated }
-    } yield isAnySandboxUpdated) match {
-      case Success(bool) => new Boolean(!bool)
-      case Failure(e) => throw new GradleException("Failed to get storeDependentSandboxes.isAnySandboxUpdated!", e)
-    }
   }
 
   def attachToSourceSet(sourceSet: FunctionalSourceSet) = {
