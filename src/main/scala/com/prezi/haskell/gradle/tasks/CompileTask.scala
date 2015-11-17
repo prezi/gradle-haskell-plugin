@@ -11,10 +11,7 @@ import scala.collection.JavaConverters._
 /**
  * Executes cabal install with the proper sandbox chaining
  */
-class CompileTask
-  extends CabalExecTask
-  with DependsOnStoreDependentSandboxes {
-
+class CompileTask extends CabalExecTask with DependsOnStoreDependentSandboxes{
   val buildDir = getProject.getProjectDir </> "dist"
 
   if (haskellExtension.getUseStack) {

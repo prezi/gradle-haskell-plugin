@@ -33,7 +33,7 @@ trait UsingTestProjects {
 
   protected def gradle(root: File, args: String*): Boolean = {
     val process = new ProcessBuilder()
-      .command("gradle" +: "--no-daemon" +: s"-PpluginBuildDir=$pluginBuildDirProp" +: args : _*)
+      .command("gradle" +: "--no-daemon" +: "--stacktrace" +: s"-PpluginBuildDir=$pluginBuildDirProp" +: args : _*)
       .directory(root)
       .start()
 
@@ -70,4 +70,10 @@ trait UsingTestProjects {
       writer.close()
     }
   }
+
+  protected def stackYamlExists(path: File): Boolean =
+    (path </> "stack.yaml").exists()
+
+  protected def stackYamlLines(path: File): List[String] =
+    Source.fromFile(path </> "stack.yaml").getLines().toList
 }

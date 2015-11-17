@@ -1,15 +1,14 @@
 package com.prezi.haskell.gradle.tasks
 
 import java.io.File
-import scala.collection.JavaConverters._
-import com.prezi.haskell.gradle.ApiHelper._
+
 import com.prezi.haskell.gradle.external.SnapshotVersions
 import com.prezi.haskell.gradle.model.Sandbox
 import org.apache.commons.io.FileUtils
-import org.gradle.api.{GradleException, DefaultTask}
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.{DefaultTask, GradleException}
 
-import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
 
 class GenerateStackYaml
   extends DefaultTask
@@ -20,9 +19,12 @@ class GenerateStackYaml
   with DependsOnStoreDependentSandboxes
   with TaskLogging {
 
-  // TODO: depend on .cabal
-
   private var targetFile_ : Option[File] = None
+
+  findCabalFile() match {
+    case Some(cabalFile) => getInputs.file(cabalFile)
+    case None =>
+  }
 
   def targetFile = targetFile_
   def targetFile_=(value: Option[File]): Unit = {
@@ -90,7 +92,7 @@ class GenerateStackYaml
 
     val isOffline = getProject.getGradle.getStartParameter.isOffline
     val snapshotVersions = new SnapshotVersions(isOffline, haskellExtension.getEnvConfigurer, getProject.exec, tools.get, git.get)
-    val deps = snapshotVersions.run(haskellExtension.snapshotId, findCabalFile())
+    val deps = snapshotVersions.run(haskellExtension.snapshotId, getCabalFile())
 
     if (deps.length > 0) {
       content.append("extra-deps:\n")
@@ -110,8 +112,11 @@ class GenerateStackYaml
     content.mkString
   }
 
-  private def findCabalFile(): File =
-    getProject.getProjectDir.listFiles().find(_.getName.endsWith(".cabal")) match {
+  private def findCabalFile(): Option[File] =
+    getProject.getProjectDir.listFiles().find(_.getName.endsWith(".cabal"))
+
+  private def getCabalFile(): File =
+    findCabalFile() match {
       case Some(file) => file
       case None => throw new GradleException(s"Could not find any .cabal files in ${getProject.getRootDir.getAbsolutePath}")
     }
