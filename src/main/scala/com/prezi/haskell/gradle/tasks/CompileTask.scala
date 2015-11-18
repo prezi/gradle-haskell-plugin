@@ -11,7 +11,11 @@ import scala.collection.JavaConverters._
 /**
  * Executes cabal install with the proper sandbox chaining
  */
-class CompileTask extends CabalExecTask with DependsOnStoreDependentSandboxes{
+class CompileTask
+  extends CabalExecTask
+  with DependsOnStoreDependentSandboxes
+  with TaskLogging {
+
   val buildDir = getProject.getProjectDir </> "dist"
 
   if (haskellExtension.getUseStack) {
@@ -24,11 +28,15 @@ class CompileTask extends CabalExecTask with DependsOnStoreDependentSandboxes{
 
     for (lss <- sourceSet.asScala) {
       lss.getSource.visit(new FileVisitor {
-        override def visitDir(fileVisitDetails: FileVisitDetails): Unit =
+        override def visitDir(fileVisitDetails: FileVisitDetails): Unit = {
+          debug(s"${getName} input dir: ${fileVisitDetails.getFile.getAbsolutePath}")
           getInputs.dir(fileVisitDetails.getFile)
+        }
 
-        override def visitFile(fileVisitDetails: FileVisitDetails): Unit =
+        override def visitFile(fileVisitDetails: FileVisitDetails): Unit = {
+          debug(s"${getName} input file: ${fileVisitDetails.getFile.getAbsolutePath}")
           getInputs.file(fileVisitDetails.getFile)
+        }
       })
     }
 
