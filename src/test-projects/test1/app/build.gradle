@@ -3,3 +3,6 @@ dependencies {
 	main project(path: ":lib1", configuration: "main")
 	main project(path: ":lib2", configuration: "main")
 }
+
+haskell.isExecutable = true
+
