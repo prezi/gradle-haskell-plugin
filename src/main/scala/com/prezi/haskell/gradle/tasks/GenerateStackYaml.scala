@@ -2,6 +2,7 @@ package com.prezi.haskell.gradle.tasks
 
 import java.io.File
 
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.SnapshotVersions
 import com.prezi.haskell.gradle.model.Sandbox
 import org.apache.commons.io.FileUtils
@@ -105,7 +106,7 @@ class GenerateStackYaml
       content.append("extra-deps: []\n")
     }
 
-    val binPath = new File(new File(new File(getProject.getBuildDir, "sandbox"), "files"), "bin")
+    val binPath = getProject.getBuildDir </> "sandbox" </> "files" </> "bin"
     binPath.mkdirs()
     content.append(s"local-bin-path: ${binPath.getAbsolutePath}")
 

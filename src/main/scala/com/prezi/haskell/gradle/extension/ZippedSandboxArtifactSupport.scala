@@ -8,7 +8,11 @@ import org.gradle.api.Project
  */
 class ZippedSandboxArtifactSupport(protected val project: Project) extends ZippedSandboxArtifactSupportImpl with ProjectExtender {
 
-  defineZipSandboxArtifact
+  if (haskellExtension.getIsExecutable) {
+    defineZipExecutableArtifact
+  } else {
+    defineZipSandboxArtifact
+  }
 }
 
 

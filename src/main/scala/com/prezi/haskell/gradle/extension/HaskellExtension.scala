@@ -25,6 +25,7 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
     else None
   private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
     new util.HashMap[String, java.util.Map[String, String]]()
+  private var isExecutable_ : Boolean = false
   private var envConfigurer_ : OptEnvConfigurer = None
 
   def getSources = sources_
@@ -82,6 +83,12 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   def getPackageFlags = packageFlags_
   def setPackageFlags(value: java.util.Map[String, java.util.Map[String, String]]): Unit = {
     packageFlags_ = value
+  }
+
+  def isExecutable = isExecutable_
+  def getIsExecutable = isExecutable_
+  def setIsExecutable(value: Boolean): Unit = {
+    isExecutable_ = value
   }
 }
 
