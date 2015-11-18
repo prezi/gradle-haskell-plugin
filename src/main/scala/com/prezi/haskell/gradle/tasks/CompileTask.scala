@@ -41,6 +41,8 @@ class CompileTask
     }
 
     dependsOn(sourceSet)
+
+    debug(s"${getName} output dir: $configTimeSandboxRoot")
     getOutputs.dir(configTimeSandboxRoot)
   }
 
