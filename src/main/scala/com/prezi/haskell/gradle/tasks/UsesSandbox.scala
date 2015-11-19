@@ -17,7 +17,7 @@ trait UsesSandbox {
 
   protected lazy val configTimeSandboxRoot: File =
     if (haskellExtension.getUseStack) {
-      getProject.getProjectDir </> ".stack-work"
+      getProject.getProjectDir </> ".stack-work" </> "install"
     } else {
       sandbox.root
     }
