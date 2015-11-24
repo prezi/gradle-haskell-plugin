@@ -66,10 +66,17 @@ trait HaskellDependencies {
       .map(artifact => (ModuleId.fromModuleVersionIdentifier(artifact.getModuleVersion.getId), artifact.getFile))
       .toMap
 
-    val zips = for (id <- orderedIds;
-         modId = ModuleId.fromComponentIdentifier(getProject.getRootProject, id))
+    val zips =
+      for (id <- orderedIds;
+           modId = ModuleId.fromComponentIdentifier(getProject.getRootProject, id))
       yield artifacts.get(modId) match {
-        case Some(file) => Some(store.find(new SandboxArtifact(modId.name, file)))
+        case Some(file) =>
+          val sandbox = store.find(new SandboxArtifact(modId.name, file))
+          if (sandbox.packageDb.exists()) {
+            Some(sandbox)
+          } else {
+            None
+          }
         case None => None
       }
 
