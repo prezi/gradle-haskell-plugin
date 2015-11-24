@@ -73,18 +73,21 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
   }
 
   def fixSandbox(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact], sandbox: Sandbox): Any = {
-    project.getLogger.info("Fixing dependent sandbox {}", depSandbox.name)
+    // For executable artifacts we don't have a package db:
+    if (sandbox.packageDb.exists()) {
+      project.getLogger.info("Fixing dependent sandbox {}", depSandbox.name)
 
-    val envConfigurer = exts.getEnvConfigurer
-    val (_, elapsed) = measureTime {
-      sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList)
-    }
-    project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
+      val envConfigurer = exts.getEnvConfigurer
+      val (_, elapsed) = measureTime {
+        sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList)
+      }
+      project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
 
-    val (_, elapsedRecache) = measureTime {
-      tools.ghcPkgRecache(envConfigurer, sandbox)
+      val (_, elapsedRecache) = measureTime {
+        tools.ghcPkgRecache(envConfigurer, sandbox)
+      }
+      project.getLogger.info("ghc-pkg recache of sandbox {} in {} s", depSandbox.name, elapsedRecache)
     }
-    project.getLogger.info("ghc-pkg recache of sandbox {} in {} s", depSandbox.name, elapsedRecache)
   }
 
   def extractSandbox(depSandbox: SandboxArtifact, sandbox: Sandbox): Unit = {
