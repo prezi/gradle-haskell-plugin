@@ -22,7 +22,7 @@ class TestTask extends CabalExecTask {
       } else {
         List()
       }
-      tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "--no-system-ghc" :: "test" :: profilingArgs : _*)
+      tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "test" :: profilingArgs : _*)
     } else {
       tools.get.cabalTest(cabalContext())
     }

@@ -63,14 +63,14 @@ class CompileTask
   }
 
   def runWithStack(): Unit = {
-    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "--no-system-ghc", "setup")
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "setup")
 
     val profilingArgs = if (cabalContext().profiling) {
       List("--executable-profiling", "--library-profiling")
     } else {
       List()
     }
-    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "--no-system-ghc" :: "build" :: "--copy-bins" :: profilingArgs : _*)
+    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "build" :: "--copy-bins" :: profilingArgs : _*)
   }
 
   def runWithCabal(): Unit = {

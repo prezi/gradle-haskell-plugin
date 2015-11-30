@@ -54,7 +54,7 @@ class SnapshotVersions(isOffline: Boolean, envConfigurer: OptEnvConfigurer, exec
   }
 
   private def buildSource(): Unit = {
-    haskellTools.stack(envConfigurer, cacheDir, "--no-system-ghc", "setup")
-    haskellTools.stack(envConfigurer, cacheDir, "--no-system-ghc", "build")
+    haskellTools.stack(envConfigurer, cacheDir, "setup")
+    haskellTools.stack(envConfigurer, cacheDir, "build")
   }
 }
