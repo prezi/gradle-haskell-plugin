@@ -1,0 +1,7 @@
+
+dependencies {
+	main project(path: ":lib2", configuration: "main")
+}
+
+haskell.isExecutable = true
+

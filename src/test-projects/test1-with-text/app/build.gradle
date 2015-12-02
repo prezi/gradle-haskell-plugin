@@ -5,6 +5,6 @@ dependencies {
 }
 
 haskell {
-	isExeutable = true
+	isExecutable = true
 	packageFlags["text"] = ["integer-simple": "false"]
 }

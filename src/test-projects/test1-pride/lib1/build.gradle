@@ -1,0 +1,15 @@
+group = 'com.prezi.haskell.gradle.systests'
+version = '1.0'
+
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath fileTree(dir: "$pluginBuildDir/integ-test-bundle/lib", include: '*.jar')
+		classpath "com.prezi.pride:gradle-pride-plugin:0.10"
+	}
+}
+
+apply plugin: "haskell"
+apply plugin: "pride"

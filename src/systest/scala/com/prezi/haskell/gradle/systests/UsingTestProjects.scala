@@ -76,4 +76,8 @@ trait UsingTestProjects {
 
   protected def stackYamlLines(path: File): List[String] =
     Source.fromFile(path </> "stack.yaml").getLines().toList
+
+  protected def hardcodePluginBuildDir(path: File): Unit = {
+    modifySource(path, "\\$pluginBuildDir", pluginBuildDirProp)
+  }
 }
