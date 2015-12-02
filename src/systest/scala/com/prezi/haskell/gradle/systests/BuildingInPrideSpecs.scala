@@ -55,6 +55,8 @@ class BuildingInPrideSpecs
 
     "recompile successfully if 'lib2' is changed" in {
       withCleanWorkingDir("test1-pride") { root =>
+        initWorkspace(root)
+
         gradle(root, "-Puse-stack=false", "app:build") aka "First gradle app:build runs successfully" must beTrue
         runApp(root) aka "the compiled app's output" must be equalTo "hello world"
 
@@ -67,6 +69,8 @@ class BuildingInPrideSpecs
 
     "recompile successfully if 'lib2' is changed and recompiled" in {
       withCleanWorkingDir("test1-pride") { root =>
+        initWorkspace(root)
+
         gradle(root, "-Puse-stack=false", "app:build") aka "First gradle app:build runs successfully" must beTrue
         runApp(root) aka "the compiled app's output" must be equalTo "hello world"
 
@@ -121,6 +125,8 @@ class BuildingInPrideSpecs
 
     "recompile successfully if 'lib2' is changed" in {
       withCleanWorkingDir("test1-pride") { root =>
+        initWorkspace(root)
+
         gradle(root, "-Puse-stack", "app:build") aka "First gradle app:build runs successfully" must beTrue
         runApp(root) aka "the compiled app's output" must be equalTo "hello world"
 
@@ -133,6 +139,8 @@ class BuildingInPrideSpecs
 
     "recompile successfully if 'lib2' is changed and recompiled" in {
       withCleanWorkingDir("test1-pride") { root =>
+        initWorkspace(root)
+
         gradle(root, "-Puse-stack", "app:build") aka "First gradle app:build runs successfully" must beTrue
         runApp(root) aka "the compiled app's output" must be equalTo "hello world"
 
