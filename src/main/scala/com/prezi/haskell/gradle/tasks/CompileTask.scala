@@ -59,7 +59,7 @@ class CompileTask
 
             val differs = hashes.differsFrom(newHashes)
             debug(s"$getName output snapshots differ: $differs")
-            
+
             new java.lang.Boolean(!differs)
           case None =>
             debug(s"$getName is not up to date, there were no saved output snapshot")
