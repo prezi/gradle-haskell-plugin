@@ -20,7 +20,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.prezi.haskell:gradle-haskell-plugin:0.3.1+'
+        classpath 'com.prezi.haskell:gradle-haskell-plugin:0.4+'
     }
 }
 
@@ -28,7 +28,7 @@ apply plugin: 'haskell'
 ```
 
 ## Dependencies, artifacts
-Haskell projects creates **zipped sandboxes** as artifacts, and handles dependencies by *chaining* the dependent sandboxes for each GHC/cabal command.
+Haskell projects creates **zipped sandboxes** as artifacts, and handles dependencies by *chaining* the dependent sandboxes for each GHC/cabal/stack command.
 All the dependencies put into the configuration called `main` must be haskell dependencies.
 
 The following example shows both an _external dependency_ and a _project dependency_, both pointing to an artifact produced by the this plugin.
@@ -58,6 +58,33 @@ haskell {
 ```
 
 **NOTE** This only affects _gradle_'s up-to-date checks. You still have to add the source directories to your _cabal file_ too.
+
+## Stack support
+The plugin now supports [stack](http://haskellstack.com) although it's not enabled by default yet. To turn stack mode one, enabled the `use-stack` property,
+for example with the `-Puse-stack` command line argument.
+
+In this case all you need is a working `stack` executable, everything else is handled by the plugin and *stack*.
+
+There are a few additional options available in *stack mode*:
+
+### Compiler and snapshot versions
+To change the GHC version or the *stackage snapshot* to be used, use:
+
+```groovy
+haskell {
+    ghcVersion = "ghc-7.10.2"
+    snapshotId = "lts-3.19"
+}
+```
+
+### Package flags
+It is possible to customize the *cabal flags* of dependencies installed by *stack*, with the following syntax:
+ 
+ ```groovy
+ haskell {
+ 	packageFlags["text"] = ["integer-simple": "false"]
+ }
+ ```
 
 ### Profiling
 _Profiling_ is enabled by default. To turn it off, change the `profiling` property of the `haskell` extension:
@@ -97,7 +124,7 @@ haskell {
 }
 ```
 
-## Explanation
+## Explanation (cabal mode)
 Let's see an example scenario with _4 gradle-haskell projects_.
 
 ![drawing1](https://raw.githubusercontent.com/prezi/gradle-haskell-plugin/master/doc/gradle-haskell-plugin-drawing1.png)
@@ -112,6 +139,31 @@ The project called _Haskell project_ depends on two other projects, which taking
 - Then it runs [SandFix](https://github.com/exFalso/sandfix) on both the dependencies
 - And finally passes three package databases to cabal/ghc to compile the project. Only those cabal dependencies will be installed into this sandbox which are not in global, neither in any of the dependent sandboxes.
 - Finally, for **Haskell project** it goes the same way, but here we have three sandboxes, all chained together to make sure only the built sandbox only contains what is not in the dependent sandboxes yet.
+
+## Explanation (stack mode)
+The stack mode uses the `extra-package-dbs` option of *stack* which was introduced to support this plugin. The idea is that gradle generates the `stack.yaml` 
+based on the existing `.cabal` file and the gradle project, and this way it can set up the stack project to use the dependent gradle projects as
+binary artifacts.
+
+The generated *stack* projects have the following properties:
+- They use a compiler-only resolver (for example `ghc-7.10.2`)
+- All other dependencies are listed in the `extra-deps` section
+- The gradle-level dependencies are listed in as `extra-package-dbs`
+
+This way the *stack* project's *local package database* can be archived as a binary artifact.
+ 
+To not loose the stackage *snapshots*, the plugin also uses another tool called [snapshot-versions](https://github.com/vigoo/snapshot-versions), which
+generates the `extra-deps` section of the *stack project* by enumerating all the dependencies from the `.cabal` file and reading the snapshot version number
+from the configured stackage snapshot.
+
+To use a package that is **not** part of the configured *stackage snapshot*, but otherwise available from *hackage*, you have to specify it's exact version number 
+in the `.cabal file`, like:
+
+```
+Crypto ==4.2.5.1
+```
+
+For the dependencies that are *part* of the snapshot, the `.cabal` file should not put any constraints on.
 
 ## Details
 Applying the plugin adds the following to the project:
@@ -150,8 +202,3 @@ Additional tasks supporting the ones above:
 - `configureSandboxes` sets up `extractDependentSandboxes` and `fixDependentSandboxes` tasks after the dependency resolution is done
 - `extractDependentSandboxes` extracts the resolved artifacts to temporary directories inside `build/deps`
 - `fixDependentSandboxes` clones the extracted sandboxes and runs _SandFix_ on them
-- `generateGhcModCradle` generates the `ghc-mod.cradle` file to the project's root directory, supporting [ghc-mod](http://www.mew.org/~kazu/proj/ghc-mod/en/) to find the dependent sandboxes.
-
-### ghc-mod support
-The `ghc-mod` support is implemented by the following _pull request_ on the `ghc-mod` side:
-https://github.com/kazu-yamamoto/ghc-mod/pull/470
