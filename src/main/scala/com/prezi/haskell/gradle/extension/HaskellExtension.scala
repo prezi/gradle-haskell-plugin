@@ -18,7 +18,7 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   private var profiling_ : Boolean = !project.hasProperty(PropertyKey.GhcDisableProfiling)
   private var useStack_ : Boolean = project.hasProperty(PropertyKey.UseStack) && project.property(PropertyKey.UseStack) != "false"
   private var ghcVersion_ : String = "ghc-7.10.2"
-  private var snapshotId_ : String = "lts-3.19"
+  private var snapshotId_ : String = "lts-3.22"
   private var cabalVersion_ : CabalVersion = Cabal122
   private var cabalConfigFile_ : Option[String] =
     if (project.hasProperty(PropertyKey.CabalConfigFile)) Some(project.getProperties.get(PropertyKey.CabalConfigFile).toString)

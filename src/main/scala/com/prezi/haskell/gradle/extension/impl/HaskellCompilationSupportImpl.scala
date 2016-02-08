@@ -90,10 +90,14 @@ trait HaskellCompilationSupportImpl {
     }
 
     // The default `check` task just calls the `test` task
-    if (!isTaskDefined("check")) {
-      val checkTask = createTask[DefaultTask]("check")
-      checkTask.getDependsOn.add(testHaskellTask)
-    }
+    val checkTask =
+      if (!isTaskDefined("check")) {
+        createTask[DefaultTask]("check")
+      } else {
+        getTask[Task]("check")
+      }
+
+    checkTask.getDependsOn.add(testHaskellTask)
   }
 
   protected def addREPLTask(): Unit = {
