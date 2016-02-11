@@ -1,8 +1,8 @@
 package com.prezi.haskell.gradle.tasks
 
+import com.prezi.haskell.gradle.Profiling.measureTime
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-
 import scala.collection.JavaConverters._
 
 /**
@@ -23,10 +23,16 @@ class ConfigureSandboxTasks
       throw new IllegalStateException("extractTask is not set")
     }
 
-    for (artifact <- configuration.get.getResolvedConfiguration.getResolvedArtifacts.asScala) {
-      storeTask.get.getInputs.file(artifact.getFile)
+    val (artifacts, dt1) = measureTime { configuration.get.getResolvedConfiguration.getResolvedArtifacts.asScala }
+    info(s"[PERFORMANCE] Getting resolved artifacts took $dt1 seconds")
 
-      debug(s"Adding ${artifact.getFile} as input for $storeTask")
+    val (_, dt2) = measureTime {
+      for (artifact <- artifacts) {
+        storeTask.get.getInputs.file(artifact.getFile)
+
+        debug(s"Adding ${artifact.getFile} as input for $storeTask")
+      }
     }
+    info(s"[PERFORMANCE] Setting storeTask's inputs took $dt2 seconds")
   }
 }

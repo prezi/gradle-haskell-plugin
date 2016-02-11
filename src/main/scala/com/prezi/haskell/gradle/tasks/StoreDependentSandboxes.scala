@@ -3,6 +3,7 @@ package com.prezi.haskell.gradle.tasks
 import java.io.File
 import java.util
 
+import com.prezi.haskell.gradle.Profiling.measureTime
 import com.prezi.haskell.gradle.model.SandboxArtifact
 import com.prezi.haskell.gradle.model.sandboxstore.SandBoxStoreResult
 import org.gradle.api.DefaultTask
@@ -60,18 +61,23 @@ class StoreDependentSandboxes
       )
 
     // Collecting all the dependent sandbox artifacts
-    val sandboxes = dependency.getAllModuleArtifacts
-      .asScala
-      .map(artifact => new SandboxArtifact(artifact.getName, artifact.getFile))
-      .toSet
+    val (sandboxes, dt1) = measureTime {
+      dependency.getAllModuleArtifacts
+        .asScala
+        .map(artifact => new SandboxArtifact(artifact.getName, artifact.getFile))
+        .toSet
+    }
+    info(s"${prefix}[PERFORMANCE] Collecting dependent sandbox artifacts for ${dependency.getName} took $dt1 seconds")
 
     // Storing the sandbox and its dependent sandboxes
-    val sandboxStoreResults =
+    val (sandboxStoreResults, dt2) = measureTime {
       for (sandbox <- sandboxes) yield {
         val res = memoizedStoreDependencyInStore(sandbox, depSandboxes)
         debug(s"$res <- memoizedStoreDependencyInStore($sandbox, $depSandboxes)")
         res
       }
+    }
+    info(s"${prefix}[PERFORMANCE] Storing sandbox and its dependent sandboxes for ${dependency.getName} took $dt2 seconds")
 
     (sandboxes, sandboxStoreResults.foldLeft(aggregatedStoreResult)(aggregateStoreResult))
   }
@@ -96,7 +102,8 @@ class StoreDependentSandboxes
       if (sandboxStoreCache.containsKey(key)) {
         SandBoxStoreResult(sandboxStoreCache.get(key))
       } else {
-        val res = store.store(sandbox, depSandboxes)
+        val (res, dt) = measureTime { store.store(sandbox, depSandboxes) }
+        info(s"[PERFORMANCE] Storing and fixing sandbox $sandbox took $dt seconds")
         sandboxStoreCache.put(key, res.toNormalizedString)
         res
       }
