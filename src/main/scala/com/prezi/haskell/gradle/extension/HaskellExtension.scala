@@ -11,7 +11,8 @@ import org.gradle.internal.reflect.Instantiator
 
 /**
  * Project extension holding the source set and other properties for Haskell projects
- * @param instantiator Gradle object instantiator
+  *
+  * @param instantiator Gradle object instantiator
  */
 class HaskellExtension(instantiator: Instantiator, project: Project) extends java.io.Serializable {
   private val sources_ : ProjectSourceSet = instantiator.newInstance(classOf[DefaultProjectSourceSet], instantiator)
@@ -27,6 +28,10 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
     new util.HashMap[String, java.util.Map[String, String]]()
   private var isExecutable_ : Boolean = false
   private var envConfigurer_ : OptEnvConfigurer = None
+  private var overriddenSnapshotVersionsCacheDir_ : Option[String] =
+    if (project.hasProperty(PropertyKey.SnapshotVersionsCacheDir)) Some(project.getProperties.get(PropertyKey.SnapshotVersionsCacheDir).toString)
+    else None
+
 
   def getSources = sources_
 
@@ -90,6 +95,12 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   def setIsExecutable(value: Boolean): Unit = {
     isExecutable_ = value
   }
+
+  def overriddenSnapshotVersionsCacheDir  = overriddenSnapshotVersionsCacheDir_
+  def getOverriddenSnapshotVersionsCacheDir = overriddenSnapshotVersionsCacheDir_
+  def setOverriddenSnapshotVersionsCacheDir(value: String) = {
+    Some(value)
+  }
 }
 
 object HaskellExtension {
@@ -97,5 +108,6 @@ object HaskellExtension {
     val GhcDisableProfiling = "ghc-disable-profiling"
     val CabalConfigFile = "cabal-config-file"
     val UseStack = "use-stack"
+    val SnapshotVersionsCacheDir = "snapshot-versions-dir"
   }
 }
