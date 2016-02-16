@@ -90,14 +90,14 @@ class CompileTask
   }
 
   private def runWithStack(): Unit = {
-    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "setup")
+    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir, "setup")
 
     val profilingArgs = if (cabalContext().profiling) {
       List("--executable-profiling", "--library-profiling")
     } else {
       List()
     }
-    tools.get.stack(cabalContext().envConfigurer, getProject.getProjectDir, "build" :: "--copy-bins" :: profilingArgs : _*)
+    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir, "build" :: "--copy-bins" :: profilingArgs : _*)
   }
 
   private def updateSnapshot(): Unit = {

@@ -5,12 +5,14 @@ import java.io.File
 import com.prezi.haskell.gradle.external.HaskellTools._
 import com.prezi.haskell.gradle.external.ToolsBase.OptEnvConfigurer
 import com.prezi.haskell.gradle.model.Sandbox
+import com.prezi.haskell.gradle.ApiHelper.asClosure
 import org.gradle.api.Action
 import org.gradle.process.{ExecResult, ExecSpec}
 
 /**
  * Executes external tools with the Gradle project's execution command
- * @param executor The `project.exec` function
+  *
+  * @param executor The `project.exec` function
  */
 class HaskellTools(executor : Action[ExecSpec] => ExecResult)
   extends ToolsBase(executor) {
@@ -166,21 +168,37 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
       .head
   }
 
-  def stack(envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): Unit =
+  def stack(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): Unit =
     exec(
       Some(workingDir),
-      envConfigurer,
+      setStackRoot(envConfigurer, stackRoot),
       "stack",
       params : _*
     )
 
-  def capturedStack(envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): String =
+  def capturedStack(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): String =
     capturedExec(
       Some(workingDir),
-      envConfigurer,
+      setStackRoot(envConfigurer, stackRoot),
       "stack",
       params : _*
     )
+
+  private def setStackRoot(envConfigurer: OptEnvConfigurer, stackRoot: Option[String]): OptEnvConfigurer = {
+    val fn: java.util.Map[String, AnyRef] => Unit = env => {
+      envConfigurer match {
+        case Some(inner) => inner.call(env)
+        case None =>
+      }
+
+      stackRoot match {
+        case Some(path) => env.put("STACK_ROOT", stackRoot)
+        case None =>
+      }
+    }
+
+    Some(asClosure[AnyRef] { o => fn(o.asInstanceOf[java.util.Map[String, AnyRef]]) })
+  }
 
   private def profilingArgs(profiling: Boolean, cabalVersion: CabalVersion): List[String] = {
     if (profiling) {

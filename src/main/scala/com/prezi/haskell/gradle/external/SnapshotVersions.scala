@@ -12,11 +12,11 @@ import org.gradle.process.{ExecResult, ExecSpec}
  * Wraps the `snapshot-versions` tool which lists all the dependencies read from
  * a cabal file with their corresponding versions fetched from a stackage snapshot.
  */
-class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], envConfigurer: OptEnvConfigurer, executor : Action[ExecSpec] => ExecResult, haskellTools: HaskellTools, git: Git) {
+class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], stackRoot: Option[String], envConfigurer: OptEnvConfigurer, executor : Action[ExecSpec] => ExecResult, haskellTools: HaskellTools, git: Git) {
 
   def run(snapshot: String, cabal: File): Array[String] = {
     ensureToolExists()
-    val output = haskellTools.capturedStack(envConfigurer, cacheDir, "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
+    val output = haskellTools.capturedStack(stackRoot, envConfigurer, cacheDir, "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
 
     output.split('\n').map(_.trim).filter(_.length > 0)
   }
@@ -55,7 +55,7 @@ class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], env
   }
 
   private def buildSource(): Unit = {
-    haskellTools.stack(envConfigurer, cacheDir, "setup")
-    haskellTools.stack(envConfigurer, cacheDir, "build")
+    haskellTools.stack(stackRoot, envConfigurer, cacheDir, "setup")
+    haskellTools.stack(stackRoot, envConfigurer, cacheDir, "build")
   }
 }

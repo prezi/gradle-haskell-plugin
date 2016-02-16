@@ -13,6 +13,8 @@ trait CabalExecTask
   with UsingHaskellTools
   with UsesSandbox {
 
+  protected lazy val stackRoot: Option[String] = haskellExtension.getStackRoot
+
   def cabalContext(): CabalContext = new CabalContext(
     haskellExtension.cabalType,
     getProject.getProjectDir,

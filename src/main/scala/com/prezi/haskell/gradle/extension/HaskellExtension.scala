@@ -31,7 +31,9 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   private var overriddenSnapshotVersionsCacheDir_ : Option[String] =
     if (project.hasProperty(PropertyKey.SnapshotVersionsCacheDir)) Some(project.getProperties.get(PropertyKey.SnapshotVersionsCacheDir).toString)
     else None
-
+  private var stackRoot_ : Option[String] =
+    if (project.hasProperty(PropertyKey.StackRoot)) Some(project.getProperties.get(PropertyKey.StackRoot).toString)
+    else None
 
   def getSources = sources_
 
@@ -99,7 +101,13 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   def overriddenSnapshotVersionsCacheDir  = overriddenSnapshotVersionsCacheDir_
   def getOverriddenSnapshotVersionsCacheDir = overriddenSnapshotVersionsCacheDir_
   def setOverriddenSnapshotVersionsCacheDir(value: String) = {
-    Some(value)
+    overriddenSnapshotVersionsCacheDir_ = Some(value)
+  }
+
+  def stackRoot  = stackRoot_
+  def getStackRoot = stackRoot_
+  def setStackRoot(value: String) = {
+    stackRoot_ = Some(value)
   }
 }
 
@@ -109,5 +117,6 @@ object HaskellExtension {
     val CabalConfigFile = "cabal-config-file"
     val UseStack = "use-stack"
     val SnapshotVersionsCacheDir = "snapshot-versions-dir"
+    val StackRoot = "stack-root"
   }
 }
