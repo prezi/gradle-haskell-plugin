@@ -193,8 +193,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
 
       stackRoot match {
         case Some(path) =>
-          env.put("STACK_ROOT", stackRoot)
-          println(s"Setting STAKC_ROOT to $stackRoot")
+          env.put("STACK_ROOT", path)
         case None =>
       }
     }
