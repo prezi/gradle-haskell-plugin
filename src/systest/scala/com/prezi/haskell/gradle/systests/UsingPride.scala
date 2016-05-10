@@ -8,7 +8,7 @@ trait UsingPride {
 
   protected def initPride(root: File): Unit = {
     val process = new ProcessBuilder()
-      .command("pride", "init", "--force", "--gradle-version", "2.4")
+      .command("pride", "init", "--force", "--gradle-version", "2.13")
       .directory(root)
       .start()
 
