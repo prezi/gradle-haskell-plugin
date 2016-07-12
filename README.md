@@ -60,8 +60,7 @@ haskell {
 **NOTE** This only affects _gradle_'s up-to-date checks. You still have to add the source directories to your _cabal file_ too.
 
 ## Stack support
-The plugin now supports [stack](http://haskellstack.com) although it's not enabled by default yet. To turn stack mode one, enabled the `use-stack` property,
-for example with the `-Puse-stack` command line argument.
+The plugin now supports [stack](http://haskellstack.com) and it is enabled by default now. 
 
 In this case all you need is a working `stack` executable, everything else is handled by the plugin and *stack*.
 
