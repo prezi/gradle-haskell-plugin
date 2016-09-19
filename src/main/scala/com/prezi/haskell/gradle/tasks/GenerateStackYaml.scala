@@ -5,6 +5,7 @@ import java.io.File
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.SnapshotVersions
 import com.prezi.haskell.gradle.model.Sandbox
+import com.prezi.haskell.gradle.util.FileLock
 import org.apache.commons.io.FileUtils
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.{DefaultTask, GradleException}
@@ -38,17 +39,23 @@ class GenerateStackYaml
 
   @TaskAction
   def run(): Unit = {
-    needsConfigurationSet
-    needsGitSet
-    needsToolsSet
+    val fileLock = new FileLock(new File(getProject.getRootProject.getBuildDir, "generate-yaml.lock"))
+    fileLock.lock()
+    try {
+      needsConfigurationSet
+      needsGitSet
+      needsToolsSet
 
-    if (targetFile.isEmpty) {
-      throw new IllegalStateException("targetFile is not specified")
+      if (targetFile.isEmpty) {
+        throw new IllegalStateException("targetFile is not specified")
+      }
+
+      debug(s"GenerateStackYaml dependentSandboxes: $dependentSandboxes")
+      val yamlFile = generateContent(dependentSandboxes)
+      FileUtils.writeStringToFile(targetFile.get, yamlFile)
+    } finally {
+      fileLock.release()
     }
-
-    debug(s"GenerateStackYaml dependentSandboxes: $dependentSandboxes")
-    val yamlFile = generateContent(dependentSandboxes)
-    FileUtils.writeStringToFile(targetFile.get, yamlFile)
   }
 
   private def generateContent(sandboxes: List[Sandbox]): String = {

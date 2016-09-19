@@ -6,7 +6,7 @@ import com.prezi.haskell.gradle.incubating.FunctionalSourceSet
 import com.prezi.haskell.gradle.model.StackOutputHash
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.{FileVisitDetails, FileVisitor}
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.{Input, TaskAction}
 
 import scala.collection.JavaConverters._
 
@@ -19,6 +19,7 @@ class CompileTask
   with TaskLogging {
 
   val buildDir = getProject.getProjectDir </> "dist"
+  var parallelThreadCount = 3
 
   if (haskellExtension.getUseStack) {
     dependsOn("generateStackYaml")
@@ -97,7 +98,15 @@ class CompileTask
     } else {
       List()
     }
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir, "build" :: "--copy-bins" :: profilingArgs : _*)
+
+    val ghcOptions = if (parallelThreadCount > 1) {
+      List(s"""--ghc-options="-j${parallelThreadCount}"""")
+    } else {
+      List()
+    }
+
+    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir,
+      "build" :: "--copy-bins" :: ghcOptions ::: profilingArgs : _*)
   }
 
   private def updateSnapshot(): Unit = {
@@ -114,4 +123,11 @@ class CompileTask
     tools.get.cabalCopy(ctx)
     tools.get.cabalRegister(ctx)
   }
+
+  @Input
+  def getParallelThreadCount: Integer = parallelThreadCount
+  def setParallelThreadCount(threadCount: Integer): Unit = {
+    parallelThreadCount = threadCount
+  }
+  def parallelThreadCount(threadCount: Integer): Unit = setParallelThreadCount(threadCount)
 }

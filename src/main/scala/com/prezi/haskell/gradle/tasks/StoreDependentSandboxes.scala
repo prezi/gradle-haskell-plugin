@@ -6,6 +6,7 @@ import java.util
 import com.prezi.haskell.gradle.Profiling.measureTime
 import com.prezi.haskell.gradle.model.SandboxArtifact
 import com.prezi.haskell.gradle.model.sandboxstore.SandBoxStoreResult
+import com.prezi.haskell.gradle.util.FileLock
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.{Configuration, ResolvedDependency}
 import org.gradle.api.logging.LogLevel
@@ -36,16 +37,24 @@ class StoreDependentSandboxes
 
   @TaskAction
   def run(): Unit = {
-    needsConfigurationSet
+    val fileLock = new FileLock(new File(getProject.getRootProject.getBuildDir, "store-sandbox.lock"))
+    fileLock.lock()
+    try {
+      needsConfigurationSet
 
-    info(s"Storing dependent sandboxes for ${getProject.getName}")
-    val storeDependencyResults =
-      for (dependency <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) yield {
-        storeDependency(dependency)
+      info(s"Storing dependent sandboxes for ${getProject.getName}")
+      val storeDependencyResults =
+        for (dependency <- configuration.get.getResolvedConfiguration.getFirstLevelModuleDependencies.asScala) yield {
+          storeDependency(dependency)
+        }
+
+      dumpSandboxStoreResults(storeDependencyResults)
+      isAnySandboxUpdated = storeDependencyResults.exists {
+        _._2 == SandBoxStoreResult.Created
       }
-
-    dumpSandboxStoreResults(storeDependencyResults)
-    isAnySandboxUpdated = storeDependencyResults.exists { _._2 == SandBoxStoreResult.Created }
+    } finally {
+      fileLock.release()
+    }
   }
 
   def storeDependency(dependency: ResolvedDependency, prefix: String = ""): (Set[SandboxArtifact], SandBoxStoreResult) = {
