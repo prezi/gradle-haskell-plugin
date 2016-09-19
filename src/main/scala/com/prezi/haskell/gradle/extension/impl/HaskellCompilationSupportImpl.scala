@@ -53,6 +53,10 @@ trait HaskellCompilationSupportImpl {
         if (conf.getName == Names.mainConfiguration) {
           val compileConfTask = createTask[CompileTask]("compile" + conf.getName.capitalize)
           compileConfTask.attachToSourceSet(sourceSet)
+          val parallelParameterName = "stack.parallelThreadCount"
+          if (project.hasProperty(parallelParameterName)) {
+            compileConfTask.setParallelThreadCount(Integer.valueOf(project.property(parallelParameterName).asInstanceOf[String]))
+          }
 
           compileConfTask.configuration = Some(conf)
           compileConfTask.tools = tools
