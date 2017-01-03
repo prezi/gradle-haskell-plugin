@@ -15,7 +15,7 @@ class StackPathTask extends DefaultTask
   with HaskellProjectSupport
   with UsingHaskellTools {
 
-  val outputFile = StackPathTask.getPathCache(getProject)
+  val outputFile: File = StackPathTask.getPathCache(getProject)
 
   dependsOn("generateStackYaml")
   getInputs.file(getProject.getProjectDir </> "stack.yaml")
@@ -24,6 +24,8 @@ class StackPathTask extends DefaultTask
   @TaskAction
   def run(): Unit = {
     needsToolsSet
+
+    tools.get.stack(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, getProject.getProjectDir, "setup")
 
     val output = tools.get.capturedStack(haskellExtension.getStackRoot, haskellExtension.getEnvConfigurer, getProject.getProjectDir, "path")
     Files.createParentDirs(outputFile)
