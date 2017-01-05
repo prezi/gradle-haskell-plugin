@@ -4,7 +4,7 @@ import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension.ProjectExtender
 import com.prezi.haskell.gradle.external.{Git, HaskellTools}
-import com.prezi.haskell.gradle.tasks.{StackPathTask, GenerateStackYaml}
+import com.prezi.haskell.gradle.tasks.{GenerateStackYaml, StackBinPathTask, StackPathTask}
 import org.gradle.api.tasks.Delete
 import org.gradle.language.base.plugins.LifecycleBasePlugin._
 
@@ -21,7 +21,7 @@ trait StackSupportImpl {
     val pathTask = createTask[StackPathTask]("stackPath")
     pathTask.tools = Some(getField[HaskellTools]("haskellTools"))
 
-    val binPathTask = createTask[StackPathTask]("stackBinPath")
+    val binPathTask = createTask[StackBinPathTask]("stackBinPath")
     binPathTask.tools = Some(getField[HaskellTools]("haskellTools"))
   }
 
