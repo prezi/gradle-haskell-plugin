@@ -32,13 +32,11 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
     executor(asAction({ spec: ExecSpec =>
       // Wrapping commands in "sh" if needed so they can use the
       // new PATH created by the envConfigurer
-      val cmdLine: Seq[String] = envConfigurer match {
-        case Some(_) => Seq("sh", "-c", (cachedSandfix.getAbsolutePath :: args).mkString(" "))
-        case None => cachedSandfix.getAbsolutePath +: args.toSeq
-      }
+      val cmdLine = Seq("sh", "-c", (cachedSandfix.getAbsolutePath :: args).mkString(" "))
 
       spec.commandLine(cmdLine : _*)
       envConfigurer map { _.call(spec.getEnvironment) }
+      spec.getEnvironment.put("PATH", ghcPkgPath.substring(0, ghcPkgPath.length - "/ghc-pkg".length) + ":" + spec.getEnvironment.get("PATH"))
     }))
   }
 
