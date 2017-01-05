@@ -19,9 +19,14 @@ class StoreDependentSandboxes
   extends DefaultTask
   with HaskellDependencies
   with UsingHaskellTools
+  with HaskellProjectSupport
   with TaskLogging {
 
   dependsOn("copySandFix")
+
+  if (haskellExtension.getUseStack) {
+    dependsOn("stackPath")
+  }
 
   var sandFixPath: Option[File] = None
 
