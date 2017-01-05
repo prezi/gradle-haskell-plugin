@@ -127,15 +127,15 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
     exec(
       None,
       envConfigurer,
-      "stack runhaskell --",
-      source.getAbsolutePath +: args : _*)
+      "stack",
+      "runhaskell" +: "--" +: source.getAbsolutePath +: args : _*)
 
   def ghc(envConfigurer: OptEnvConfigurer, args: String*): Unit =
     exec(
       None,
       envConfigurer,
-      "stack ghc --",
-      args : _*)
+      "stack",
+      "ghc" +: "--" +: args : _*)
 
   def ghcPkgRecache(envConfigurer: OptEnvConfigurer, ghcPkgPath: String, sandbox: Sandbox): Unit =
     exec(
