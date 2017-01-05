@@ -15,8 +15,6 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
 
   def run(envConfigurer: OptEnvConfigurer, sandbox: Sandbox, others: List[Sandbox], ghcPkgPath: String): Unit = {
 
-
-
     val cabalVersion = haskellTools.getCabalVersion(envConfigurer, ghcPkgPath)
     val cacheDir = getCacheDir(cabalVersion, sourceHash)
     val cachedSandfix = getCachedFile(cacheDir)
