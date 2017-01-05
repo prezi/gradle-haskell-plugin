@@ -24,10 +24,6 @@ class StoreDependentSandboxes
 
   dependsOn("copySandFix")
 
-  if (haskellExtension.getUseStack) {
-    dependsOn("stackBinPath")
-  }
-
   var sandFixPath: Option[File] = None
 
   private var isAnySandboxUpdated_ : Boolean = false
