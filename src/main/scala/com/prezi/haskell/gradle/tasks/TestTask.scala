@@ -22,7 +22,7 @@ class TestTask extends CabalExecTask {
       } else {
         List()
       }
-      tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir, "test" :: profilingArgs : _*)
+      tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir), "test" :: profilingArgs : _*)
     } else {
       tools.get.cabalTest(cabalContext())
     }

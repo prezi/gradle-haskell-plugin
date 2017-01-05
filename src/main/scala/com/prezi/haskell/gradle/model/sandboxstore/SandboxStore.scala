@@ -11,7 +11,7 @@ trait SandboxStore {
     * @param dependencies Its dependencies, required to be able to fix the sandbox
     * @return Returns the outcome of the store opration (cached or it already existed)
     */
-  def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact], ghcPkgPath: String): SandBoxStoreResult
+  def store(stackRoot: Option[String], depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact]): SandBoxStoreResult
 
   /**
     * Gets the location for a given sandbox artifact where it would be stored.

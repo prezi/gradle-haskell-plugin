@@ -117,7 +117,7 @@ class StoreDependentSandboxes
       if (sandboxStoreCache.containsKey(key)) {
         SandBoxStoreResult(sandboxStoreCache.get(key))
       } else {
-        val (res, dt) = measureTime { store.store(sandbox, depSandboxes, ghcPkgPath(getProject)) }
+        val (res, dt) = measureTime { store.store(haskellExtension.stackRoot, sandbox, depSandboxes) }
         info(s"[PERFORMANCE] Storing and fixing sandbox $sandbox took $dt seconds")
         sandboxStoreCache.put(key, res.toNormalizedString)
         res

@@ -25,32 +25,9 @@ class StackPathTask extends DefaultTask
   def run(): Unit = {
     needsToolsSet
 
-    tools.get.stack(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, getProject.getProjectDir, "setup")
+    tools.get.stack(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, Some(getProject.getProjectDir), "setup")
 
-    val output = tools.get.capturedStack(haskellExtension.getStackRoot, haskellExtension.getEnvConfigurer, getProject.getProjectDir, "path")
-    Files.createParentDirs(outputFile)
-    for (writer <- managed(new PrintWriter(outputFile))) {
-      writer.write(output)
-    }
-  }
-}
-
-class StackBinPathTask extends DefaultTask
-  with HaskellProjectSupport
-  with UsingHaskellTools {
-
-  val outputFile: File = StackPathTask.getBinPathCache(getProject)
-
-  getInputs.file(getProject.getProjectDir </> "stack.yaml")
-  getOutputs.file(outputFile)
-
-  @TaskAction
-  def run(): Unit = {
-    needsToolsSet
-
-    tools.get.stack(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, getProject.getProjectDir, "setup")
-
-    val output = tools.get.capturedStack(haskellExtension.getStackRoot, haskellExtension.getEnvConfigurer, getProject.getProjectDir, "path")
+    val output = tools.get.capturedStack(haskellExtension.getStackRoot, haskellExtension.getEnvConfigurer, Some(getProject.getProjectDir), "path")
     Files.createParentDirs(outputFile)
     for (writer <- managed(new PrintWriter(outputFile))) {
       writer.write(output)
@@ -61,6 +38,4 @@ class StackBinPathTask extends DefaultTask
 object StackPathTask {
   def getPathCache(project: Project): File =
     project.getBuildDir </> "stack-path.out"
-  def getBinPathCache(project: Project): File =
-    project.getBuildDir </> "stack-bin-path.out"
 }

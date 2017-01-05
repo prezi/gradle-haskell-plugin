@@ -137,11 +137,14 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
       "stack",
       "ghc" +: "--" +: args : _*)
 
-  def ghcPkgRecache(envConfigurer: OptEnvConfigurer, ghcPkgPath: String, sandbox: Sandbox): Unit =
-    exec(
-      None,
+  def ghcPkgRecache(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, sandbox: Sandbox): Unit =
+    stack(
+      stackRoot,
       envConfigurer,
-      ghcPkgPath,
+      None,
+      "exec",
+      "ghc-pkg",
+      "--",
       "-f",
       sandbox.packageDb.getAbsolutePath,
       "recache")
@@ -153,11 +156,14 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
       "ghc-pkg",
       "list" :: sandboxes.map(_.asPackageDbArg) : _*)
 
-  def getCabalVersion(envConfigurer: OptEnvConfigurer, ghcPkgPath: String): String = {
-    val output = capturedExec(
-      None,
+  def getCabalVersion(stackRoot: Option[String], envConfigurer: OptEnvConfigurer): String = {
+    val output = capturedStack(
+      stackRoot,
       envConfigurer,
-      ghcPkgPath,
+      None,
+      "exec",
+      "ghc-pkg",
+      "--",
       "describe", "Cabal"
     )
 
@@ -168,17 +174,17 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
       .head
   }
 
-  def stack(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): Unit =
+  def stack(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, workingDir: Option[File], params: String*): Unit =
     exec(
-      Some(workingDir),
+      workingDir,
       setStackRoot(envConfigurer, stackRoot),
       "stack",
       params : _*
     )
 
-  def capturedStack(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, workingDir: File, params: String*): String =
+  def capturedStack(stackRoot: Option[String], envConfigurer: OptEnvConfigurer, workingDir: Option[File], params: String*): String =
     capturedExec(
-      Some(workingDir),
+      workingDir,
       setStackRoot(envConfigurer, stackRoot),
       "stack",
       params : _*

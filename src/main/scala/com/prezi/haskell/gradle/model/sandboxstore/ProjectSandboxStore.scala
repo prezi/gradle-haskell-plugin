@@ -29,7 +29,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
 
   private val root = project.getBuildDir
   private lazy val finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
-  private lazy val sandFix = new SandFix(project.exec, finalSandFixPath </> "SandFix.hs", tools)
+  private lazy val sandFix = new SandFix(finalSandFixPath </> "SandFix.hs", tools)
 
   override def find(depSandbox: SandboxArtifact): Sandbox =
     useStack match {
@@ -46,7 +46,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
     fixedSandbox
   }
 
-  override def store(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact], ghcPkgPath: String): SandBoxStoreResult = {
+  override def store(stackRoot: Option[String], depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact]): SandBoxStoreResult = {
     val sandbox = find(depSandbox)
     if (!sandbox.root.exists()) {
       sandbox.root.mkdirs()
@@ -55,7 +55,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
       if (sandbox.lock.createNewFile()) {
         try {
           extractSandbox(depSandbox, sandbox)
-          fixSandbox(depSandbox, dependencies, sandbox, ghcPkgPath)
+          fixSandbox(stackRoot, depSandbox, dependencies, sandbox)
           SandBoxStoreResult.Created
         }
         finally {
@@ -72,19 +72,19 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
     }
   }
 
-  def fixSandbox(depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact], sandbox: Sandbox, ghcPkgPath: String): Any = {
+  def fixSandbox(stackRoot: Option[String], depSandbox: SandboxArtifact, dependencies: Set[SandboxArtifact], sandbox: Sandbox): Any = {
     // For executable artifacts we don't have a package db:
     if (sandbox.packageDb.exists()) {
       project.getLogger.info("Fixing dependent sandbox {}", depSandbox.name)
 
       val envConfigurer = exts.getEnvConfigurer
       val (_, elapsed) = measureTime {
-        sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList, ghcPkgPath)
+        sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList, stackRoot)
       }
       project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
 
       val (_, elapsedRecache) = measureTime {
-        tools.ghcPkgRecache(envConfigurer, ghcPkgPath, sandbox)
+        tools.ghcPkgRecache(stackRoot, envConfigurer, sandbox)
       }
       project.getLogger.info("ghc-pkg recache of sandbox {} in {} s", depSandbox.name, elapsedRecache)
     }

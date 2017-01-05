@@ -16,7 +16,7 @@ class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], sta
 
   def run(snapshot: String, cabal: File): Array[String] = {
     ensureToolExists()
-    val output = haskellTools.capturedStack(stackRoot, envConfigurer, cacheDir, "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
+    val output = haskellTools.capturedStack(stackRoot, envConfigurer, Some(cacheDir), "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
 
     output.split('\n').map(_.trim).filter(_.length > 0)
   }
@@ -55,7 +55,7 @@ class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], sta
   }
 
   private def buildSource(): Unit = {
-    haskellTools.stack(stackRoot, envConfigurer, cacheDir, "setup")
-    haskellTools.stack(stackRoot, envConfigurer, cacheDir, "build")
+    haskellTools.stack(stackRoot, envConfigurer, Some(cacheDir), "setup")
+    haskellTools.stack(stackRoot, envConfigurer, Some(cacheDir), "build")
   }
 }

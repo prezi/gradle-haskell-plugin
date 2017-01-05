@@ -10,12 +10,12 @@ import org.gradle.api.Action
 import org.gradle.process.{ExecResult, ExecSpec}
 import resource._
 
-class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, haskellTools: HaskellTools) {
+class SandFix(sandFixPath: File, haskellTools: HaskellTools) {
   private val sourceHash = calculateSourceHash()
 
-  def run(envConfigurer: OptEnvConfigurer, sandbox: Sandbox, others: List[Sandbox], ghcPkgPath: String): Unit = {
+  def run(envConfigurer: OptEnvConfigurer, sandbox: Sandbox, others: List[Sandbox], stackRoot: Option[String]): Unit = {
 
-    val cabalVersion = haskellTools.getCabalVersion(envConfigurer, ghcPkgPath)
+    val cabalVersion = haskellTools.getCabalVersion(stackRoot, envConfigurer)
     val cacheDir = getCacheDir(cabalVersion, sourceHash)
     val cachedSandfix = getCachedFile(cacheDir)
 
@@ -25,19 +25,14 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
 
     val dbArgs = others.map(child => child.asPackageDbArg)
     val args = List(
+      "exec",
+      cachedSandfix.getAbsolutePath,
+      "--",
       sandbox.root.getAbsolutePath,
       sandbox.packageDb.getName,
       "--package-db=global") ::: dbArgs.toList
 
-    executor(asAction({ spec: ExecSpec =>
-      // Wrapping commands in "sh" if needed so they can use the
-      // new PATH created by the envConfigurer
-      val cmdLine = Seq("sh", "-c", (cachedSandfix.getAbsolutePath :: args).mkString(" "))
-
-      spec.commandLine(cmdLine : _*)
-      envConfigurer map { _.call(spec.getEnvironment) }
-      spec.getEnvironment.put("PATH", ghcPkgPath.substring(0, ghcPkgPath.length - "/ghc-pkg".length) + ":" + spec.getEnvironment.get("PATH"))
-    }))
+    haskellTools.stack(stackRoot, envConfigurer, None, args : _*)
   }
 
   private def calculateSourceHash(): String =
@@ -51,7 +46,7 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
       cacheDir.mkdirs()
     }
 
-    haskellTools.ghc(envConfigurer, "-v", "-O2", "-o", getCachedFile(cacheDir).getAbsolutePath, sandFixPath.getAbsolutePath)
+    haskellTools.ghc(envConfigurer, "-O2", "-o", getCachedFile(cacheDir).getAbsolutePath, sandFixPath.getAbsolutePath)
   }
 
   private def getCachedFile(cacheDir: File): File = cacheDir </> "sandfix"

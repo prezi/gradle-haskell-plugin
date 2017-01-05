@@ -12,6 +12,6 @@ class StackUpdateTask extends CabalExecTask {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir, "update")
+    tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir), "update")
   }
 }

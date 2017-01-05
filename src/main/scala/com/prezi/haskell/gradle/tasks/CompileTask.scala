@@ -91,7 +91,7 @@ class CompileTask
   }
 
   private def runWithStack(): Unit = {
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir, "setup")
+    tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir), "setup")
 
     val profilingArgs = if (cabalContext().profiling) {
       List("--executable-profiling", "--library-profiling")
@@ -105,7 +105,7 @@ class CompileTask
       List()
     }
 
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, getProject.getProjectDir,
+    tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir),
       "build" :: "--copy-bins" :: ghcOptions ::: profilingArgs : _*)
   }
 
