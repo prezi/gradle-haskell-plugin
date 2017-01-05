@@ -137,11 +137,11 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
       "ghc",
       args : _*)
 
-  def ghcPkgRecache(envConfigurer: OptEnvConfigurer, sandbox: Sandbox): Unit =
+  def ghcPkgRecache(envConfigurer: OptEnvConfigurer, ghcPkgPath: String, sandbox: Sandbox): Unit =
     exec(
       None,
       envConfigurer,
-      "ghc-pkg",
+      ghcPkgPath,
       "-f",
       sandbox.packageDb.getAbsolutePath,
       "recache")
@@ -153,7 +153,7 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult)
       "ghc-pkg",
       "list" :: sandboxes.map(_.asPackageDbArg) : _*)
 
-  def getCabalVersion(envConfigurer: OptEnvConfigurer): String = {
+  def getCabalVersion(envConfigurer: OptEnvConfigurer, ghcPkgPath: String): String = {
     val output = capturedExec(
       None,
       envConfigurer,
