@@ -53,7 +53,7 @@ class SandFix(executor : Action[ExecSpec] => ExecResult, sandFixPath: File, hask
       cacheDir.mkdirs()
     }
 
-    haskellTools.ghc(envConfigurer, "-O2", "-o", getCachedFile(cacheDir).getAbsolutePath, sandFixPath.getAbsolutePath)
+    haskellTools.ghc(envConfigurer, "-v", "-O2", "-o", getCachedFile(cacheDir).getAbsolutePath, sandFixPath.getAbsolutePath)
   }
 
   private def getCachedFile(cacheDir: File): File = cacheDir </> "sandfix"
