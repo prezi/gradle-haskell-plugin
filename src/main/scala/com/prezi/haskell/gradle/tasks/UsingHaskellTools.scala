@@ -22,9 +22,9 @@ trait UsingHaskellTools {
   }
 
   protected def ghcPkgPath(project: Project): String = {
-    val pathCache = StackPathTask.getPathCache(project)
+    val pathCache = StackPathTask.getBinPathCache(project)
     if (!pathCache.exists) {
-      throw new GradleException(s"Stack path cache (${pathCache.getAbsolutePath}) does not exists")
+      throw new GradleException(s"Stack bin path cache (${pathCache.getAbsolutePath}) does not exists")
     }
 
     val key = "compiler-bin: "

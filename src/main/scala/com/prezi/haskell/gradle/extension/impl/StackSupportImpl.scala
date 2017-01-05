@@ -20,6 +20,9 @@ trait StackSupportImpl {
 
     val pathTask = createTask[StackPathTask]("stackPath")
     pathTask.tools = Some(getField[HaskellTools]("haskellTools"))
+
+    val binPathTask = createTask[StackPathTask]("stackBinPath")
+    binPathTask.tools = Some(getField[HaskellTools]("haskellTools"))
   }
 
   protected def extendCleanTask(): Unit = {
