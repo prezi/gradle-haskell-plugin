@@ -1,13 +1,11 @@
 package com.prezi.haskell.gradle.external
 
-import java.io.{FileInputStream, File}
+import java.io.{File, FileInputStream}
 
+import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.ToolsBase.OptEnvConfigurer
 import com.prezi.haskell.gradle.model.Sandbox
-import com.prezi.haskell.gradle.ApiHelper._
 import org.apache.commons.codec.digest.DigestUtils
-import org.gradle.api.Action
-import org.gradle.process.{ExecResult, ExecSpec}
 import resource._
 
 class SandFix(sandFixPath: File, haskellTools: HaskellTools) {
@@ -15,6 +13,7 @@ class SandFix(sandFixPath: File, haskellTools: HaskellTools) {
 
   def run(envConfigurer: OptEnvConfigurer, sandbox: Sandbox, others: List[Sandbox], stackRoot: Option[String]): Unit = {
 
+    haskellTools.stack(stackRoot, envConfigurer, None, "setup")
     val cabalVersion = haskellTools.getCabalVersion(stackRoot, envConfigurer)
     val cacheDir = getCacheDir(cabalVersion, sourceHash)
     val cachedSandfix = getCachedFile(cacheDir)
@@ -45,7 +44,6 @@ class SandFix(sandFixPath: File, haskellTools: HaskellTools) {
     if (!cacheDir.exists()) {
       cacheDir.mkdirs()
     }
-
     haskellTools.ghc(envConfigurer, "-O2", "-o", getCachedFile(cacheDir).getAbsolutePath, sandFixPath.getAbsolutePath)
   }
 

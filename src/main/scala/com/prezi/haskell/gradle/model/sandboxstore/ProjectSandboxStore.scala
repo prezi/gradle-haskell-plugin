@@ -83,6 +83,7 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
       }
       project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
 
+      tools.stack(stackRoot, envConfigurer, Some(project.getProjectDir), "setup")
       val (_, elapsedRecache) = measureTime {
         tools.ghcPkgRecache(stackRoot, envConfigurer, sandbox)
       }

@@ -19,6 +19,7 @@ class SandboxTask extends DefaultTask
     needsToolsSet
 
     if (!(sandbox.packageDb </> "package.cache").exists()) {
+      tools.get.stack(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, Some(getProject.getProjectDir), "setup")
       tools.get.ghcPkgRecache(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, sandbox)
     }
   }
