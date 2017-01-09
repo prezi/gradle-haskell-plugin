@@ -33,7 +33,7 @@ trait UsingTestProjects {
 
   protected def gradle(root: File, args: String*): Boolean = {
     val process = new ProcessBuilder()
-      .command("gradle" +: "--no-daemon" +: "--stacktrace" +: s"-PpluginBuildDir=$pluginBuildDirProp" +: args : _*)
+      .command("gradle" +: "--no-daemon" +: "--stacktrace" +: "-i" +: s"-PpluginBuildDir=$pluginBuildDirProp" +: args : _*)
       .directory(root)
       .start()
 

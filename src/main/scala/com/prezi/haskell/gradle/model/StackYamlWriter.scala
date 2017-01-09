@@ -24,7 +24,7 @@ class StackYamlWriter(target: File) {
   }
 
   def resolver(name: String): Unit = {
-    builder.append(s"resolver: $name")
+    builder.append(s"resolver: $name\n")
   }
 
   def extraPackageDbs(dbs: Seq[String]): Unit = {

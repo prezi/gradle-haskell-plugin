@@ -10,6 +10,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.{DefaultTask, GradleException}
 
 import scala.collection.JavaConverters._
+import resource._
 
 class GenerateStackYaml
   extends DefaultTask
@@ -57,8 +58,7 @@ class GenerateStackYaml
   }
 
   private def generateContent(target: File, sandboxes: List[Sandbox]): Unit = {
-    val builder = new StackYamlWriter(target)
-    try {
+    for (builder <- managed(new StackYamlWriter(target))) {
       val resolver = s"${haskellExtension.ghcVersion}"
 
       val pkgFlags = haskellExtension
@@ -89,9 +89,6 @@ class GenerateStackYaml
 
       // TODO: use configured GHC version
       builder.ghcVersion(GHC801WithSierraFix)
-    }
-    finally {
-      builder.close()
     }
   }
 

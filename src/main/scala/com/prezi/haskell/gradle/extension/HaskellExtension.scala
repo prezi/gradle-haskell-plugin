@@ -15,12 +15,8 @@ import org.gradle.internal.reflect.Instantiator
 class HaskellExtension(instantiator: Instantiator, project: Project) extends java.io.Serializable {
   private val sources_ : ProjectSourceSet = instantiator.newInstance(classOf[DefaultProjectSourceSet], instantiator)
   private var profiling_ : Boolean = !project.hasProperty(PropertyKey.GhcDisableProfiling)
-  private var useStack_ : Boolean = !project.hasProperty(PropertyKey.UseStack) || (project.property(PropertyKey.UseStack) != "false")
   private var ghcVersion_ : String = "ghc-8.0.1"
   private var snapshotId_ : String = "lts-7.14"
-  private var cabalConfigFile_ : Option[String] =
-    if (project.hasProperty(PropertyKey.CabalConfigFile)) Some(project.getProperties.get(PropertyKey.CabalConfigFile).toString)
-    else None
   private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
     new util.HashMap[String, java.util.Map[String, String]]()
   private var isExecutable_ : Boolean = false
@@ -85,8 +81,6 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
 object HaskellExtension {
   object PropertyKey {
     val GhcDisableProfiling = "ghc-disable-profiling"
-    val CabalConfigFile = "cabal-config-file"
-    val UseStack = "use-stack"
     val SnapshotVersionsCacheDir = "snapshot-versions-dir"
     val StackRoot = "stack-root"
   }

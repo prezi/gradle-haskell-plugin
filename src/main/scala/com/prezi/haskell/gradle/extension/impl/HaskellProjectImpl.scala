@@ -11,6 +11,7 @@ import com.prezi.haskell.gradle.model.{GHC801WithSierraFix, StackYamlWriter}
 import com.prezi.haskell.gradle.model.sandboxstore.ProjectSandboxStore
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator
+import resource._
 
 trait HaskellProjectImpl {
   this: ProjectExtender =>
@@ -68,9 +69,10 @@ trait HaskellProjectImpl {
       stackToolPath
     } else {
       stackToolPath.mkdirs()
-      val yaml = new StackYamlWriter(stackToolPath </> "stack.yaml")
-      // TODO: use configured GHC version
-      yaml.ghcVersion(GHC801WithSierraFix)
+      for (yaml <- managed(new StackYamlWriter(stackToolPath </> "stack.yaml"))) {
+        // TODO: use configured GHC version
+        yaml.ghcVersion(GHC801WithSierraFix)
+      }
       stackToolPath
     }
   }
