@@ -54,21 +54,35 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult, stackToolsDir: => 
       .head
   }
 
-  def stack(stackRoot: Option[String], workingDir: Option[File], params: String*): Unit =
+  def stack(stackRoot: Option[String], workingDir: Option[File], params: String*): Unit = {
     exec(
       workingDir.orElse(Some(stackToolsDir)),
       setStackRoot(stackRoot),
       "stack",
-      params : _*
+      "setup"
     )
+    exec(
+      workingDir.orElse(Some(stackToolsDir)),
+      setStackRoot(stackRoot),
+      "stack",
+      params: _*
+    )
+  }
 
-  def capturedStack(stackRoot: Option[String], workingDir: Option[File], params: String*): String =
+  def capturedStack(stackRoot: Option[String], workingDir: Option[File], params: String*): String = {
+    exec(
+      workingDir.orElse(Some(stackToolsDir)),
+      setStackRoot(stackRoot),
+      "stack",
+      "setup"
+    )
     capturedExec(
       workingDir.orElse(Some(stackToolsDir)),
       setStackRoot(stackRoot),
       "stack",
-      params : _*
+      params: _*
     )
+  }
 
   private def setStackRoot(stackRoot: Option[String]): Map[String, String] = {
     stackRoot match {
