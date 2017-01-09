@@ -14,19 +14,6 @@ trait SandboxSupportImpl {
     createTask[SandboxInfo]("sandboxInfo")
   }
 
-  protected def addSandboxDirectoriesTask(): Unit = {
-    if (!haskellExtension.getUseStack) {
-      createTask[SandboxDirectories]("sandboxDirectories")
-    }
-  }
-
-  protected def addSandboxTask(): Unit = {
-    if (!haskellExtension.getUseStack) {
-      val task = createTask[SandboxTask]("sandbox")
-      task.tools = Some(getField[HaskellTools]("haskellTools"))
-    }
-  }
-
   protected def addSandboxPackagesTask(): Unit = {
     val task = createTask[SandboxPackages]("sandboxPackages")
     task.tools = Some(getField[HaskellTools]("haskellTools"))
@@ -42,14 +29,6 @@ trait SandboxSupportImpl {
 
     configTask.storeTask = Some(task)
     task.getDependsOn.add(configTask)
-  }
-
-  protected def addCabalFreezeTask(): Unit = {
-    if (!haskellExtension.getUseStack) {
-      val task = createTask[FreezeTask]("cabalFreeze")
-      task.tools = Some(getField[HaskellTools]("haskellTools"))
-      task.configuration = Some(getConfiguration(Names.mainConfiguration))
-    }
   }
 
   protected def sandFixDir : File

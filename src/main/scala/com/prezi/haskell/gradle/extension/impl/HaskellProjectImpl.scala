@@ -1,10 +1,13 @@
 package com.prezi.haskell.gradle.extension.impl
 
+import java.io.File
+
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension._
 import com.prezi.haskell.gradle.external.{Git, HaskellTools}
 import com.prezi.haskell.gradle.io.packers.GradleZipPacker
+import com.prezi.haskell.gradle.model.{GHC801WithSierraFix, StackYamlWriter}
 import com.prezi.haskell.gradle.model.sandboxstore.ProjectSandboxStore
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator
@@ -13,16 +16,19 @@ trait HaskellProjectImpl {
   this: ProjectExtender =>
 
   protected def instantiator: Instantiator
+
   protected def fileResolver: FileResolver
 
-  val sandFixPath = project.getBuildDir </> "sandfix"
+  val sandFixPath: File = project.getBuildDir </> "sandfix"
+
+  val stackToolPath: File = project.getBuildDir </> "stack-tooling"
 
   // Helpers
   protected def addFields(): Unit = {
 
-    val tools = new HaskellTools(project.exec)
+    val tools = new HaskellTools(project.exec, getStackToolPath())
     val unpacker = new GradleZipPacker(project)
-    val sandboxStore = new ProjectSandboxStore(project.getRootProject, Some(sandFixPath), unpacker, getField[HaskellExtension]("haskell"), tools, haskellExtension.getUseStack)
+    val sandboxStore = new ProjectSandboxStore(project.getRootProject, Some(sandFixPath), unpacker, getField[HaskellExtension]("haskell"), tools)
     addField("haskellTools", tools)
     addField("sandboxStore", sandboxStore)
 
@@ -50,12 +56,22 @@ trait HaskellProjectImpl {
   }
 
   protected def addStackSupport(): Unit = {
-    if (haskellExtension.getUseStack) {
-      new StackSupport(project)
-    }
+    new StackSupport(project)
   }
 
   protected def registerExtension(): Unit = {
     createField[HaskellExtension]("haskell", instantiator, project)
+  }
+
+  private def getStackToolPath(): File = {
+    if (stackToolPath.exists() && (stackToolPath </> "stack.yaml").exists()) {
+      stackToolPath
+    } else {
+      stackToolPath.mkdirs()
+      val yaml = new StackYamlWriter(stackToolPath </> "stack.yaml")
+      // TODO: use configured GHC version
+      yaml.ghcVersion(GHC801WithSierraFix)
+      stackToolPath
+    }
   }
 }

@@ -10,10 +10,10 @@ class Git(executor : Action[ExecSpec] => ExecResult)
   extends ToolsBase(executor) {
 
   def clone(repoUrl: URL, targetDir: File): Unit = {
-    exec(None, None, "git", "clone", repoUrl.toString, targetDir.getAbsolutePath)
+    exec(None, Map.empty, "git", "clone", repoUrl.toString, targetDir.getAbsolutePath)
   }
 
   def pull(repoDir: File): Unit = {
-    exec(Some(repoDir), None, "git", "pull")
+    exec(Some(repoDir), Map.empty, "git", "pull")
   }
 }

@@ -25,9 +25,7 @@ class StackPathTask extends DefaultTask
   def run(): Unit = {
     needsToolsSet
 
-    tools.get.stack(haskellExtension.stackRoot, haskellExtension.getEnvConfigurer, Some(getProject.getProjectDir), "setup")
-
-    val output = tools.get.capturedStack(haskellExtension.getStackRoot, haskellExtension.getEnvConfigurer, Some(getProject.getProjectDir), "path")
+    val output = tools.get.capturedStack(haskellExtension.getStackRoot, Some(getProject.getProjectDir), "path")
     Files.createParentDirs(outputFile)
     for (writer <- managed(new PrintWriter(outputFile))) {
       writer.write(output)

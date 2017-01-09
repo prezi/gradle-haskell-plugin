@@ -3,8 +3,6 @@ package com.prezi.haskell.gradle.extension
 import java.util
 
 import com.prezi.haskell.gradle.extension.HaskellExtension.PropertyKey
-import com.prezi.haskell.gradle.external.HaskellTools.{Cabal122, CabalVersion}
-import com.prezi.haskell.gradle.external.ToolsBase.{EnvConfigurer, OptEnvConfigurer}
 import com.prezi.haskell.gradle.incubating.{DefaultProjectSourceSet, ProjectSourceSet}
 import org.gradle.api.{Action, Project}
 import org.gradle.internal.reflect.Instantiator
@@ -20,14 +18,12 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   private var useStack_ : Boolean = !project.hasProperty(PropertyKey.UseStack) || (project.property(PropertyKey.UseStack) != "false")
   private var ghcVersion_ : String = "ghc-8.0.1"
   private var snapshotId_ : String = "lts-7.14"
-  private var cabalVersion_ : CabalVersion = Cabal122
   private var cabalConfigFile_ : Option[String] =
     if (project.hasProperty(PropertyKey.CabalConfigFile)) Some(project.getProperties.get(PropertyKey.CabalConfigFile).toString)
     else None
   private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
     new util.HashMap[String, java.util.Map[String, String]]()
   private var isExecutable_ : Boolean = false
-  private var envConfigurer_ : OptEnvConfigurer = None
   private var overriddenSnapshotVersionsCacheDir_ : Option[String] =
     if (project.hasProperty(PropertyKey.SnapshotVersionsCacheDir)) Some(project.getProperties.get(PropertyKey.SnapshotVersionsCacheDir).toString)
     else None
@@ -46,31 +42,6 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
     profiling_ = value
   }
   def profiling(value: Boolean): Unit = setProfiling(value)
-
-  def getUseStack = useStack_
-  def setUseStack(value: Boolean): Unit = {
-    useStack_ = value
-  }
-  def useStack(value: Boolean): Unit = setUseStack(value)
-
-  def getCabalConfigFile = cabalConfigFile_
-  def setCabalConfigFile(value: String): Unit = {
-    cabalConfigFile_ = Some(value)
-  }
-  def cabalConfigFile(value: String): Unit = setCabalConfigFile(value)
-
-  def getEnvConfigurer = envConfigurer_
-  def setEnvConfigurer(value: OptEnvConfigurer): Unit = {
-    envConfigurer_ = value
-  }
-  def envConfigurer(value: EnvConfigurer): Unit = setEnvConfigurer(Some(value))
-
-  def cabalType: CabalVersion = cabalVersion_
-  def getCabalVersion: String = cabalVersion_.toString
-  def setCabalVersion(value: String): Unit = {
-    cabalVersion_ = CabalVersion.parse(value)
-  }
-  def cabalVersion(value: String): Unit = setCabalVersion(value)
 
   def ghcVersion: String = ghcVersion_
   def getGhcVersion: String = ghcVersion_

@@ -10,57 +10,46 @@ import scala.io.Source
 
 abstract class Sandbox(val root: File) {
 
-  val extractionRoot = root
+  val extractionRoot: File = root
+
   def packageDb: File
+
   def installPrefix: File
-  val lock = root </> ".lock"
+
+  val lock: File = root </> ".lock"
 
   def asPackageDbArg: String = s"--package-db=$packageDb"
+
   def asPrefixArg: String = s"--prefix=$installPrefix"
 
-  override def toString = root.getAbsolutePath
+  override def toString: String = root.getAbsolutePath
 }
 
 object Sandbox {
-  def createForProject(project: Project, useStack: Boolean): Sandbox = {
-    if (useStack) {
-      val pathCache = StackPathTask.getPathCache(project)
-      if (!pathCache.exists) {
-        throw new GradleException(s"Stack path cache (${pathCache.getAbsolutePath}) does not exists")
-      }
+  def createForProject(project: Project): Sandbox = {
+    val pathCache = StackPathTask.getPathCache(project)
+    if (!pathCache.exists) {
+      throw new GradleException(s"Stack path cache (${pathCache.getAbsolutePath}) does not exists")
+    }
 
-      val key = "local-install-root: "
-      val localInstallRoot = Source
-        .fromFile(pathCache)
-        .getLines()
-        .find(_.startsWith(key))
-        .map(_.substring(key.length))
+    val key = "local-install-root: "
+    val localInstallRoot = Source
+      .fromFile(pathCache)
+      .getLines()
+      .find(_.startsWith(key))
+      .map(_.substring(key.length))
 
-      localInstallRoot match {
-        case Some(path) => new StackSandbox(new File(path))
-        case None => throw new GradleException(s"Invalid 'stack path' output (${pathCache.getAbsolutePath})")
-      }
-
-    } else {
-      new CabalSandbox(project.getBuildDir </> "sandbox")
+    localInstallRoot match {
+      case Some(path) => new StackSandbox(new File(path))
+      case None => throw new GradleException(s"Invalid 'stack path' output (${pathCache.getAbsolutePath})")
     }
   }
-}
 
-/**
- * Represents a custom sandbox
- * @param root Root directory of the sandbox
- */
-class CabalSandbox(root: File)
-  extends Sandbox(root) {
-
-  val packageDb = root </> "packages"
-  val installPrefix = root </> "files"
 }
 
 class StackSandbox(root: File)
   extends Sandbox(root) {
 
-  val packageDb = root </> "pkgdb"
-  val installPrefix = root
+  val packageDb: File = root </> "pkgdb"
+  val installPrefix: File = root
 }

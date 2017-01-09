@@ -60,7 +60,7 @@ haskell {
 **NOTE** This only affects _gradle_'s up-to-date checks. You still have to add the source directories to your _cabal file_ too.
 
 ## Stack support
-The plugin now supports [stack](http://haskellstack.com) and it is enabled by default now. 
+The plugin now only works through [stack](http://haskellstack.com). 
 
 In this case all you need is a working `stack` executable, everything else is handled by the plugin and *stack*.
 
@@ -122,22 +122,6 @@ haskell {
   }
 }
 ```
-
-## Explanation (cabal mode)
-Let's see an example scenario with _4 gradle-haskell projects_.
-
-![drawing1](https://raw.githubusercontent.com/prezi/gradle-haskell-plugin/master/doc/gradle-haskell-plugin-drawing1.png)
-
-The project called _Haskell project_ depends on two other projects, which taking into accound the transitive dependencies means it depends on _three other haskell projects_. Each project has its own haskell source and _cabal file_. Building this suite consists of the following steps:
-
-- **dependency 1** is built using only the _global package database_, everything **not** in that database, together with the compiled project goes into its `build/sandbox` directory, which is a combination of a _GHC package database_ and the project's build output. This is packed as **dependency 1**'s build artifact.
-- For **dependency 2**, Gradle first downloads the build artifact of _dependency 1_ and extracts it to `build/deps/dependency1`. 
-- Then it runs [SandFix](https://github.com/exFalso/sandfix) on it
-- And compiles the second project, now passing **both** the _global package database_ and **dependency 1**'s sandbox to cabal/ghc. The result is that only the packages which are **not** in any of these two package databases will be installed in the project's own sandbox, which becomes the build artifact of **dependency 2**.
-- For **dependency 3**, Gradle extracts both the direct dependency and the transitive dependency's sandbox, to `build/deps/dependency2` and `build/deps/dependency3`.
-- Then it runs [SandFix](https://github.com/exFalso/sandfix) on both the dependencies
-- And finally passes three package databases to cabal/ghc to compile the project. Only those cabal dependencies will be installed into this sandbox which are not in global, neither in any of the dependent sandboxes.
-- Finally, for **Haskell project** it goes the same way, but here we have three sandboxes, all chained together to make sure only the built sandbox only contains what is not in the dependent sandboxes yet.
 
 ## Explanation (stack mode)
 The stack mode uses the `extra-package-dbs` option of *stack* which was introduced to support this plugin. The idea is that gradle generates the `stack.yaml` 

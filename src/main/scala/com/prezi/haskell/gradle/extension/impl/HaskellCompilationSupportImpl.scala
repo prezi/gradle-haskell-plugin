@@ -111,12 +111,8 @@ trait HaskellCompilationSupportImpl {
   }
 
   protected def addUpdateUpdateTask(): Unit = {
-    val updateTask : HaskellDependencies with UsingHaskellTools =
-      if (haskellExtension.getUseStack) {
-        createTask[StackUpdateTask]("stackUpdate")
-    } else {
-        createTask[CabalUpdateTask]("cabalUpdate")
-    }
+    val updateTask: HaskellDependencies with UsingHaskellTools =
+      createTask[StackUpdateTask]("stackUpdate")
 
     updateTask.tools = tools
     updateTask.configuration = Some(getConfiguration(Names.mainConfiguration))

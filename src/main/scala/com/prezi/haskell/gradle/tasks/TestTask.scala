@@ -3,28 +3,22 @@ package com.prezi.haskell.gradle.tasks
 import org.gradle.api.tasks.TaskAction
 
 /**
- * Executes cabal/stack test with the proper sandbox chaining
- */
-class TestTask extends CabalExecTask {
+  * Executes cabal/stack test with the proper sandbox chaining
+  */
+class TestTask extends StackExecTask {
 
-  if (haskellExtension.getUseStack) {
-    dependsOn("generateStackYaml")
-  }
+  dependsOn("generateStackYaml")
 
   @TaskAction
   def run(): Unit = {
     needsConfigurationSet
     needsToolsSet
 
-    if (haskellExtension.getUseStack) {
-      val profilingArgs = if (cabalContext().profiling) {
-        List("--executable-profiling", "--library-profiling")
-      } else {
-        List()
-      }
-      tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir), "test" :: profilingArgs : _*)
+    val profilingArgs = if (useProfiling) {
+      List("--executable-profiling", "--library-profiling")
     } else {
-      tools.get.cabalTest(cabalContext())
+      List()
     }
+    tools.get.stack(stackRoot, Some(getProject.getProjectDir), "test" :: profilingArgs: _*)
   }
 }

@@ -11,33 +11,28 @@ import org.gradle.api.tasks.{Input, TaskAction}
 import scala.collection.JavaConverters._
 
 /**
- * Executes cabal install with the proper sandbox chaining
- */
+  * Executes cabal install with the proper sandbox chaining
+  */
 class CompileTask
-  extends CabalExecTask
-  with DependsOnStoreDependentSandboxes
-  with TaskLogging {
+  extends StackExecTask
+    with DependsOnStoreDependentSandboxes
+    with TaskLogging {
 
-  val buildDir = getProject.getProjectDir </> "dist"
-  var parallelThreadCount = 3
+  private var parallelThreadCount = 3
 
-  if (haskellExtension.getUseStack) {
-    dependsOn("generateStackYaml")
-  } else {
-    dependsOn("sandbox")
-  }
+  dependsOn("generateStackYaml")
 
-  def attachToSourceSet(sourceSet: FunctionalSourceSet) = {
+  def attachToSourceSet(sourceSet: FunctionalSourceSet): Unit = {
 
     for (lss <- sourceSet.asScala) {
       lss.getSource.visit(new FileVisitor {
         override def visitDir(fileVisitDetails: FileVisitDetails): Unit = {
-          debug(s"${getName} input dir: ${fileVisitDetails.getFile.getAbsolutePath}")
+          debug(s"$getName input dir: ${fileVisitDetails.getFile.getAbsolutePath}")
           getInputs.dir(fileVisitDetails.getFile)
         }
 
         override def visitFile(fileVisitDetails: FileVisitDetails): Unit = {
-          debug(s"${getName} input file: ${fileVisitDetails.getFile.getAbsolutePath}")
+          debug(s"$getName input file: ${fileVisitDetails.getFile.getAbsolutePath}")
           getInputs.file(fileVisitDetails.getFile)
         }
       })
@@ -45,32 +40,27 @@ class CompileTask
 
     dependsOn(sourceSet)
 
-    if (haskellExtension.getUseStack) {
-      getOutputs.upToDateWhen(ApiHelper.asClosureWithReturn { _: AnyRef =>
+    getOutputs.upToDateWhen(ApiHelper.asClosureWithReturn { _: AnyRef =>
 
-        val snapshotPath = getProject.getBuildDir </> "stack-output-snapshot"
-        debug(s"$getName Custom up to date check based on ${sandbox.root}, with snapshot file $snapshotPath")
+      val snapshotPath = getProject.getBuildDir </> "stack-output-snapshot"
+      debug(s"$getName Custom up to date check based on ${sandbox.root}, with snapshot file $snapshotPath")
 
-        val oldHashes = StackOutputHash.loadSnapshot(snapshotPath)
+      val oldHashes = StackOutputHash.loadSnapshot(snapshotPath)
 
-        oldHashes match {
-          case Some(hashes) =>
-            val newHashes = StackOutputHash.calculate(sandbox.root)
-            newHashes.saveSnapshot(snapshotPath)
+      oldHashes match {
+        case Some(hashes) =>
+          val newHashes = StackOutputHash.calculate(sandbox.root)
+          newHashes.saveSnapshot(snapshotPath)
 
-            val differs = hashes.differsFrom(newHashes)
-            debug(s"$getName output snapshots differ: $differs")
+          val differs = hashes.differsFrom(newHashes)
+          debug(s"$getName output snapshots differ: $differs")
 
-            new java.lang.Boolean(!differs)
-          case None =>
-            debug(s"$getName is not up to date, there were no saved output snapshot")
-            java.lang.Boolean.FALSE
-        }
-      })
-    } else {
-      debug(s"$getName output dir: $configTimeSandboxRoot")
-      getOutputs.dir(configTimeSandboxRoot)
-    }
+          new java.lang.Boolean(!differs)
+        case None =>
+          debug(s"$getName is not up to date, there were no saved output snapshot")
+          java.lang.Boolean.FALSE
+      }
+    })
   }
 
   override def onConfigurationSet(cfg: Configuration): Unit = {
@@ -82,31 +72,25 @@ class CompileTask
     needsConfigurationSet
     needsToolsSet
 
-    if (haskellExtension.getUseStack) {
-      runWithStack()
-      updateSnapshot()
-    } else {
-      runWithCabal()
-    }
+    runWithStack()
+    updateSnapshot()
   }
 
   private def runWithStack(): Unit = {
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir), "setup")
-
-    val profilingArgs = if (cabalContext().profiling) {
+    val profilingArgs = if (useProfiling) {
       List("--executable-profiling", "--library-profiling")
     } else {
       List()
     }
 
     val ghcOptions = if (parallelThreadCount > 1) {
-      List(s"""--ghc-options="-j${parallelThreadCount}"""")
+      List(s"""--ghc-options="-j$parallelThreadCount"""")
     } else {
       List()
     }
 
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir),
-      "build" :: "--copy-bins" :: ghcOptions ::: profilingArgs : _*)
+    tools.get.stack(stackRoot, Some(getProject.getProjectDir),
+      "build" :: "--copy-bins" :: ghcOptions ::: profilingArgs: _*)
   }
 
   private def updateSnapshot(): Unit = {
@@ -115,19 +99,12 @@ class CompileTask
     newHashes.saveSnapshot(snapshotPath)
   }
 
-  private def runWithCabal(): Unit = {
-    val ctx = cabalContext()
-    tools.get.cabalInstall(ctx, depsOnly = true)
-    tools.get.cabalConfigure(ctx)
-    tools.get.cabalBuild(ctx)
-    tools.get.cabalCopy(ctx)
-    tools.get.cabalRegister(ctx)
-  }
-
   @Input
   def getParallelThreadCount: Integer = parallelThreadCount
+
   def setParallelThreadCount(threadCount: Integer): Unit = {
     parallelThreadCount = threadCount
   }
+
   def parallelThreadCount(threadCount: Integer): Unit = setParallelThreadCount(threadCount)
 }

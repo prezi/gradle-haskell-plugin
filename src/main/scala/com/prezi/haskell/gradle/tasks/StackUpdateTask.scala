@@ -5,13 +5,13 @@ import org.gradle.api.tasks.TaskAction
 /**
  * Executes stack update
  */
-class StackUpdateTask extends CabalExecTask {
+class StackUpdateTask extends StackExecTask {
 
   @TaskAction
   def run(): Unit = {
     needsConfigurationSet
     needsToolsSet
 
-    tools.get.stack(stackRoot, cabalContext().envConfigurer, Some(getProject.getProjectDir), "update")
+    tools.get.stack(stackRoot, None, "update")
   }
 }

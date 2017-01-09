@@ -16,26 +16,20 @@ import org.gradle.api.{GradleException, Project}
   * - It stores the sandboxes in a subdirectory of a Gradle project's build directory
   * - Runs the SandFix tool on newly extracted sandboxes
   *
-  * @param project The root project where the sandboxes will be stored
+  * @param project     The root project where the sandboxes will be stored
   * @param sandFixPath Path to the SandFix tool
-  * @param unpacker Zip unpacker to be used to extract sandboxes
+  * @param unpacker    Zip unpacker to be used to extract sandboxes
   * @param exts
   * @param tools
-  * @param useStack Enables/disables stack mode
   */
-class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker: Unpacker, exts: => HaskellExtension, tools: => HaskellTools, useStack: Boolean) extends SandboxStore {
-
-  project.getLogger.debug(s"ProjectSandboxStore initialized, useStack={}", useStack)
+class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker: Unpacker, exts: => HaskellExtension, tools: => HaskellTools) extends SandboxStore {
 
   private val root = project.getBuildDir
   private lazy val finalSandFixPath = sandFixPath.getOrElse(project.getBuildDir </> "sandfix")
   private lazy val sandFix = new SandFix(finalSandFixPath </> "SandFix.hs", tools)
 
   override def find(depSandbox: SandboxArtifact): Sandbox =
-    useStack match {
-      case true => depSandbox.toStackSandbox(root)
-      case false => depSandbox.toCabalSandbox(root)
-    }
+    depSandbox.toStackSandbox(root)
 
   override def get(depSandbox: SandboxArtifact): Sandbox = {
     val fixedSandbox = find(depSandbox)
@@ -77,15 +71,13 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
     if (sandbox.packageDb.exists()) {
       project.getLogger.info("Fixing dependent sandbox {}", depSandbox.name)
 
-      val envConfigurer = exts.getEnvConfigurer
       val (_, elapsed) = measureTime {
-        sandFix.run(envConfigurer, sandbox, dependencies.map(get).toList, stackRoot)
+        sandFix.run(sandbox, dependencies.map(get).toList, stackRoot)
       }
       project.getLogger.info("Fixed dependent sandbox {} in {} s", depSandbox.name, elapsed)
 
-      tools.stack(stackRoot, envConfigurer, Some(project.getProjectDir), "setup")
       val (_, elapsedRecache) = measureTime {
-        tools.ghcPkgRecache(stackRoot, envConfigurer, sandbox)
+        tools.ghcPkgRecache(stackRoot, sandbox)
       }
       project.getLogger.info("ghc-pkg recache of sandbox {} in {} s", depSandbox.name, elapsedRecache)
     }
@@ -98,6 +90,6 @@ class ProjectSandboxStore(project: Project, sandFixPath: Option[File], unpacker:
       unpacker.unpack(depSandbox.artifact, sandbox.extractionRoot)
     }
 
-    project.getLogger.info(s"Extracted dependent sandbox ${depSandbox.name} to ${sandbox.extractionRoot.getAbsolutePath} in $elapsed s", List() : _*)
+    project.getLogger.info(s"Extracted dependent sandbox ${depSandbox.name} to ${sandbox.extractionRoot.getAbsolutePath} in $elapsed s", List(): _*)
   }
 }

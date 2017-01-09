@@ -15,11 +15,8 @@ case class SandboxArtifact(name: String, artifact: File) {
   private val depsCabal = "deps"
   private val depsStack = "deps-stack"
 
-  def toCabalSandbox(root: File): Sandbox =
-    new CabalSandbox(root </> depsCabal </> getBaseName(name) </> calculateChecksum)
-
   def toStackSandbox(root: File): Sandbox =
     new StackSandbox(root </> depsStack </> getBaseName(name) </> calculateChecksum)
 
-  def toNormalizedString = name + "#" + artifact.getAbsoluteFile
+  def toNormalizedString: String = name + "#" + artifact.getAbsoluteFile
 }

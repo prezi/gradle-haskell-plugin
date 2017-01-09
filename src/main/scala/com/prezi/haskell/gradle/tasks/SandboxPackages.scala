@@ -11,17 +11,14 @@ class SandboxPackages
   with HaskellProjectSupport
   with HaskellDependencies
   with UsingHaskellTools
-  with UsesSandbox {
-
-  if (!haskellExtension.getUseStack) {
-    dependsOn("sandbox")
-  }
+  with UsesSandbox
+  with StackExecTask {
 
   @TaskAction
   def run(): Unit = {
     needsToolsSet
     needsConfigurationSet
 
-    tools.get.ghcPkgList(haskellExtension.getEnvConfigurer, dependentSandboxes.+:(sandbox))
+    tools.get.ghcPkgList(stackRoot, dependentSandboxes.+:(sandbox))
   }
 }

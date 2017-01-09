@@ -8,17 +8,11 @@ import org.gradle.api.Task
 trait UsesSandbox {
   this: Task with HaskellProjectSupport =>
 
-  if (haskellExtension.getUseStack) {
-    dependsOn("stackPath")
-  }
+  dependsOn("stackPath")
 
   protected lazy val sandbox: Sandbox =
-    Sandbox.createForProject(getProject, haskellExtension.getUseStack)
+    Sandbox.createForProject(getProject)
 
   protected lazy val configTimeSandboxRoot: File =
-    if (haskellExtension.getUseStack) {
-      getProject.getProjectDir </> ".stack-work" </> "install"
-    } else {
-      sandbox.root
-    }
+    getProject.getProjectDir </> ".stack-work" </> "install"
 }

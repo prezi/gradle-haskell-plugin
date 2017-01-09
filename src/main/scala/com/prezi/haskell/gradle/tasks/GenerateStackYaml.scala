@@ -4,9 +4,8 @@ import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.SnapshotVersions
-import com.prezi.haskell.gradle.model.Sandbox
+import com.prezi.haskell.gradle.model.{GHC801WithSierraFix, Sandbox, StackYamlWriter}
 import com.prezi.haskell.gradle.util.FileLock
-import org.apache.commons.io.FileUtils
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.{DefaultTask, GradleException}
 
@@ -51,75 +50,49 @@ class GenerateStackYaml
       }
 
       debug(s"GenerateStackYaml dependentSandboxes: $dependentSandboxes")
-      val yamlFile = generateContent(dependentSandboxes)
-      FileUtils.writeStringToFile(targetFile.get, yamlFile)
+      generateContent(targetFile.get, dependentSandboxes)
     } finally {
       fileLock.release()
     }
   }
 
-  private def generateContent(sandboxes: List[Sandbox]): String = {
-    val content = new StringBuilder()
-    val resolver = s"${haskellExtension.ghcVersion}"
+  private def generateContent(target: File, sandboxes: List[Sandbox]): Unit = {
+    val builder = new StackYamlWriter(target)
+    try {
+      val resolver = s"${haskellExtension.ghcVersion}"
 
-    val pkgFlags = haskellExtension
-      .getPackageFlags
-      .asScala
-      .filter(!_._2.isEmpty)
+      val pkgFlags = haskellExtension
+        .getPackageFlags
+        .asScala
+        .toMap
+        .filter { case (_, value) => !value.isEmpty }
+        .map { case (key, value) => (key, value.asScala.toMap) }
 
-    if (pkgFlags.nonEmpty) {
-      content.append("flags:\n")
-
-      for ((pkgName, jflags) <- pkgFlags) {
-        val flags = jflags.asScala
-
-        content.append(s"  $pkgName:\n")
-        for ((k, v) <- flags) {
-          content.append(s"    $k: $v\n")
-        }
+      if (pkgFlags.nonEmpty) {
+        builder.flags(pkgFlags)
       }
+
+      builder.packages(List("."))
+      builder.resolver(resolver)
+      builder.extraPackageDbs(sandboxes.map(_.packageDb.getAbsolutePath))
+
+
+      val isOffline = getProject.getGradle.getStartParameter.isOffline
+      val snapshotVersions = new SnapshotVersions(isOffline, haskellExtension.getOverriddenSnapshotVersionsCacheDir.map(path => new File(path)), haskellExtension.getStackRoot, getProject.exec, tools.get, git.get)
+      val deps = snapshotVersions.run(haskellExtension.snapshotId, getCabalFile())
+
+      builder.extraDeps(deps)
+
+      val binPath = getProject.getBuildDir </> "sandbox" </> "files" </> "bin"
+      binPath.mkdirs()
+      builder.localBinPath(binPath.getAbsolutePath)
+
+      // TODO: use configured GHC version
+      builder.ghcVersion(GHC801WithSierraFix)
     }
-
-    content.append(
-      s"""packages:
-         |  - .
-         |resolver: $resolver""".stripMargin)
-
-    content.append("\n\nextra-package-dbs:")
-
-    if (sandboxes.isEmpty) {
-      content.append(" []\n")
-    } else {
-      content.append('\n')
-      for (sandbox <- sandboxes) {
-        content.append("  - ")
-        content.append(sandbox.packageDb.getAbsolutePath)
-        content.append('\n')
-      }
+    finally {
+      builder.close()
     }
-
-    val isOffline = getProject.getGradle.getStartParameter.isOffline
-    val snapshotVersions = new SnapshotVersions(isOffline, haskellExtension.getOverriddenSnapshotVersionsCacheDir.map(path => new File(path)), haskellExtension.getStackRoot, haskellExtension.getEnvConfigurer, getProject.exec, tools.get, git.get)
-    val deps = snapshotVersions.run(haskellExtension.snapshotId, getCabalFile())
-
-    if (deps.length > 0) {
-      content.append("extra-deps:\n")
-      for (dep <- deps) {
-        content.append("  - ")
-        content.append(dep)
-        content.append('\n')
-      }
-    } else {
-      content.append("extra-deps: []\n")
-    }
-
-    val binPath = getProject.getBuildDir </> "sandbox" </> "files" </> "bin"
-    binPath.mkdirs()
-    content.append(s"local-bin-path: ${binPath.getAbsolutePath}")
-
-    temporarySierraFix(content)
-
-    content.mkString
   }
 
   private def findCabalFile(): Option[File] =
@@ -130,32 +103,5 @@ class GenerateStackYaml
       case Some(file) => file
       case None => throw new GradleException(s"Could not find any .cabal files in ${getProject.getRootDir.getAbsolutePath}")
     }
-
-  private def temporarySierraFix(content: StringBuilder): Unit = {
-    // Temporary fix for https://github.com/commercialhaskell/stack/issues/2577
-
-    content.append(
-      """
-        |compiler-check: match-exact
-        |compiler: ghc-8.0.1.20161117
-        |setup-info:
-        |  ghc:
-        |    linux64:
-        |      8.0.1.20161117:
-        |        url: http://downloads.haskell.org/~ghc/8.0.2-rc1/ghc-8.0.1.20161117-x86_64-deb8-linux.tar.xz
-        |        content-length: 112047972
-        |        sha1: 6a6e4c9c53c71cc84b6966a9f61948542fd2f15a
-        |    macosx:
-        |      8.0.1.20161117:
-        |        url: https://downloads.haskell.org/~ghc/8.0.2-rc1/ghc-8.0.1.20161117-x86_64-apple-darwin.tar.xz
-        |        content-length: 113379688
-        |        sha1: 53ed03d986a49ea680c291540ce44ce469514d7c
-        |    windows64:
-        |      8.0.1.20161117:
-        |        url: https://downloads.haskell.org/~ghc/8.0.2-rc1/ghc-8.0.1.20161117-x86_64-unknown-mingw32.tar.xz
-        |        content-length: 155652048
-        |        sha1: 74118dd8fd8b5e4c69b25df1644273fbe13177c7
-      """.stripMargin)
-  }
 }
 

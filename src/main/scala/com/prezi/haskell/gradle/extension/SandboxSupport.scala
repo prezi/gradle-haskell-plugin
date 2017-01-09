@@ -13,11 +13,8 @@ import org.gradle.api.Project
 class SandboxSupport(protected val project: Project, protected val sandFixDir: File) extends SandboxSupportImpl with ProjectExtender {
 
   addSandboxInfoTask
-  addSandboxDirectoriesTask
-  addSandboxTask
   addSandboxPackagesTask
   addStoreDependentSandboxesTask
-  addCabalFreezeTask
   addCopySandFixTask
 }
 

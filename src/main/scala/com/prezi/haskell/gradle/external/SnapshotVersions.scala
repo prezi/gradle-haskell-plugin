@@ -4,19 +4,18 @@ import java.io.File
 import java.net.URL
 
 import com.prezi.haskell.gradle.ApiHelper._
-import com.prezi.haskell.gradle.external.ToolsBase.OptEnvConfigurer
-import org.gradle.api.{GradleException, Action}
+import org.gradle.api.{Action, GradleException}
 import org.gradle.process.{ExecResult, ExecSpec}
 
 /**
  * Wraps the `snapshot-versions` tool which lists all the dependencies read from
  * a cabal file with their corresponding versions fetched from a stackage snapshot.
  */
-class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], stackRoot: Option[String], envConfigurer: OptEnvConfigurer, executor : Action[ExecSpec] => ExecResult, haskellTools: HaskellTools, git: Git) {
+class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], stackRoot: Option[String], executor : Action[ExecSpec] => ExecResult, haskellTools: HaskellTools, git: Git) {
 
   def run(snapshot: String, cabal: File): Array[String] = {
     ensureToolExists()
-    val output = haskellTools.capturedStack(stackRoot, envConfigurer, Some(cacheDir), "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
+    val output = haskellTools.capturedStack(stackRoot, Some(cacheDir), "exec", "snapshot-versions", "--", cabal.getAbsolutePath, snapshot, "--stack-yaml")
 
     output.split('\n').map(_.trim).filter(_.length > 0)
   }
@@ -55,7 +54,6 @@ class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], sta
   }
 
   private def buildSource(): Unit = {
-    haskellTools.stack(stackRoot, envConfigurer, Some(cacheDir), "setup")
-    haskellTools.stack(stackRoot, envConfigurer, Some(cacheDir), "build")
+    haskellTools.stack(stackRoot, Some(cacheDir), "build")
   }
 }
