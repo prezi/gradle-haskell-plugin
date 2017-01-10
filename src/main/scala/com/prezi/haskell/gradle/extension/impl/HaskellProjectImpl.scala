@@ -70,9 +70,7 @@ trait HaskellProjectImpl {
     } else {
       stackToolPath.mkdirs()
       for (yaml <- managed(new StackYamlWriter(stackToolPath </> "stack.yaml"))) {
-        // TODO: use configured GHC version
-        yaml.resolver(haskellExtension.getGhcVersion)
-        yaml.ghcVersion(GHC801WithSierraFix)
+        yaml.ghcVersion(haskellExtension.parsedGHCVersion)
       }
       stackToolPath
     }

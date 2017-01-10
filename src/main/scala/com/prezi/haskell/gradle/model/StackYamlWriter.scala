@@ -23,10 +23,6 @@ class StackYamlWriter(target: File) {
     stringList(pkgs)
   }
 
-  def resolver(name: String): Unit = {
-    builder.append(s"resolver: $name\n")
-  }
-
   def extraPackageDbs(dbs: Seq[String]): Unit = {
     builder.append("extra-package-dbs:")
     stringList(dbs)
@@ -43,10 +39,13 @@ class StackYamlWriter(target: File) {
 
   def ghcVersion(ghcVersion: GHCVersion): Unit = {
     ghcVersion match {
+      case GHC801 =>
+        builder.append("resolver: ghc-8.0.1\n")
       case GHC801WithSierraFix =>
         // Temporary fix for https://github.com/commercialhaskell/stack/issues/2577
         builder.append(
           """
+            |resolver: ghc-8.0.1
             |compiler-check: match-exact
             |compiler: ghc-8.0.1.20161117
             |setup-info:

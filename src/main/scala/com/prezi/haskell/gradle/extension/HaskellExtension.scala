@@ -4,7 +4,8 @@ import java.util
 
 import com.prezi.haskell.gradle.extension.HaskellExtension.PropertyKey
 import com.prezi.haskell.gradle.incubating.{DefaultProjectSourceSet, ProjectSourceSet}
-import org.gradle.api.{Action, Project}
+import com.prezi.haskell.gradle.model.{GHC801, GHC801WithSierraFix, GHCVersion}
+import org.gradle.api.{Action, GradleException, Project}
 import org.gradle.internal.reflect.Instantiator
 
 /**
@@ -45,6 +46,17 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
     ghcVersion_ = value
   }
   def ghcVersion(value: String): Unit = setGhcVersion(value)
+
+  def parsedGHCVersion: GHCVersion = {
+    ghcVersion_ match {
+      case "ghc-8.0.1" if System.getProperty("os.name") == "Mac OS X" =>
+        GHC801WithSierraFix
+      case "ghc-8.0.1" =>
+        GHC801
+      case _ =>
+        throw new GradleException(s"Unsupported ghc version: $ghcVersion_")
+    }
+  }
 
   def snapshotId: String = snapshotId_
   def getSnapshotId: String = snapshotId_

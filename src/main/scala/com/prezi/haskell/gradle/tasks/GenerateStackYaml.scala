@@ -59,8 +59,6 @@ class GenerateStackYaml
 
   private def generateContent(target: File, sandboxes: List[Sandbox]): Unit = {
     for (builder <- managed(new StackYamlWriter(target))) {
-      val resolver = s"${haskellExtension.ghcVersion}"
-
       val pkgFlags = haskellExtension
         .getPackageFlags
         .asScala
@@ -73,7 +71,6 @@ class GenerateStackYaml
       }
 
       builder.packages(List("."))
-      builder.resolver(resolver)
       builder.extraPackageDbs(sandboxes.map(_.packageDb.getAbsolutePath))
 
 
@@ -86,9 +83,7 @@ class GenerateStackYaml
       val binPath = getProject.getBuildDir </> "sandbox" </> "files" </> "bin"
       binPath.mkdirs()
       builder.localBinPath(binPath.getAbsolutePath)
-
-      // TODO: use configured GHC version
-      builder.ghcVersion(GHC801WithSierraFix)
+      builder.ghcVersion(haskellExtension.parsedGHCVersion)
     }
   }
 
