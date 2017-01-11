@@ -61,13 +61,16 @@ class HaskellTools(executor : Action[ExecSpec] => ExecResult, stackToolsDir: => 
       "stack",
       "setup"
     )
+    unsafeStack(stackRoot, workingDir, params : _*)
+  }
+
+  def unsafeStack(stackRoot: Option[String], workingDir: Option[File], params: String*): Unit =
     exec(
       workingDir.orElse(Some(stackToolsDir)),
       setStackRoot(stackRoot),
       "stack",
       params: _*
     )
-  }
 
   def capturedStack(stackRoot: Option[String], workingDir: Option[File], params: String*): String = {
     exec(
