@@ -54,11 +54,6 @@ class SnapshotVersions(isOffline: Boolean, overriddenCacheDir: Option[File], sta
   }
 
   private def buildSource(): Unit = {
-    // NOTE: while using the temporary backported Sierra fix, it is not safe to use the
-    // stack executor here, as it installs the non-patched GHC to global. Replace this
-    // back once GHC 8.0.2 is out:
-    // haskellTools.stack(stackRoot, Some(cacheDir), "build")
-    haskellTools.unsafeStack(None, None, "setup") // force stack-tools GHC version to be installed
-    haskellTools.unsafeStack(stackRoot, Some(cacheDir), "build")
+    haskellTools.stack(stackRoot, Some(cacheDir), "build")
   }
 }

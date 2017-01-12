@@ -4,7 +4,7 @@ import java.io.File
 
 import com.prezi.haskell.gradle.ApiHelper._
 import com.prezi.haskell.gradle.external.SnapshotVersions
-import com.prezi.haskell.gradle.model.{GHC801WithSierraFix, Sandbox, StackYamlWriter}
+import com.prezi.haskell.gradle.model.{Sandbox, StackYamlWriter}
 import com.prezi.haskell.gradle.util.FileLock
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.{DefaultTask, GradleException}
