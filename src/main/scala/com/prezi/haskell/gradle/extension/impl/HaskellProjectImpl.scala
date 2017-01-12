@@ -7,7 +7,7 @@ import com.prezi.haskell.gradle.Names
 import com.prezi.haskell.gradle.extension._
 import com.prezi.haskell.gradle.external.{Git, HaskellTools}
 import com.prezi.haskell.gradle.io.packers.GradleZipPacker
-import com.prezi.haskell.gradle.model.{GHC801WithSierraFix, StackYamlWriter}
+import com.prezi.haskell.gradle.model.{GHC802, StackYamlWriter}
 import com.prezi.haskell.gradle.model.sandboxstore.ProjectSandboxStore
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator
