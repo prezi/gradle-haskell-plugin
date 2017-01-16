@@ -39,6 +39,8 @@ class StackYamlWriter(target: File) {
 
   def ghcVersion(ghcVersion: GHCVersion): Unit = {
     ghcVersion match {
+      case GHC7102 =>
+        builder.append("resolver: ghc-7.10.2\n")
       case GHC801 =>
         builder.append("resolver: ghc-8.0.1\n")
       case GHC801WithSierraFix =>

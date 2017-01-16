@@ -4,7 +4,7 @@ import java.util
 
 import com.prezi.haskell.gradle.extension.HaskellExtension.PropertyKey
 import com.prezi.haskell.gradle.incubating.{DefaultProjectSourceSet, ProjectSourceSet}
-import com.prezi.haskell.gradle.model.{GHC801, GHC801WithSierraFix, GHC802, GHCVersion}
+import com.prezi.haskell.gradle.model._
 import org.gradle.api.{Action, GradleException, Project}
 import org.gradle.internal.reflect.Instantiator
 
@@ -16,8 +16,8 @@ import org.gradle.internal.reflect.Instantiator
 class HaskellExtension(instantiator: Instantiator, project: Project) extends java.io.Serializable {
   private val sources_ : ProjectSourceSet = instantiator.newInstance(classOf[DefaultProjectSourceSet], instantiator)
   private var profiling_ : Boolean = !project.hasProperty(PropertyKey.GhcDisableProfiling)
-  private var ghcVersion_ : String = "ghc-8.0.1"
-  private var snapshotId_ : String = "lts-7.15"
+  private var ghcVersion_ : String = "ghc-7.10.2"
+  private var snapshotId_ : String = "lts-3.22" // "lts-7.15"
   private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
     new util.HashMap[String, java.util.Map[String, String]]()
   private var isExecutable_ : Boolean = false
@@ -54,6 +54,8 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
 
   def parsedGHCVersion: GHCVersion = {
     ghcVersion_ match {
+      case "ghc-7.10.2" =>
+        GHC7102
       case "ghc-8.0.1" if System.getProperty("os.name") == "Mac OS X" =>
         GHC801WithSierraFix
       case "ghc-8.0.1" =>
