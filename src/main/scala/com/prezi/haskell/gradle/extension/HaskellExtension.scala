@@ -17,7 +17,7 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
   private val sources_ : ProjectSourceSet = instantiator.newInstance(classOf[DefaultProjectSourceSet], instantiator)
   private var profiling_ : Boolean = !project.hasProperty(PropertyKey.GhcDisableProfiling)
   private var ghcVersion_ : String = "ghc-8.0.2"
-  private var snapshotId_ : String = "nightly-2017-01-30"
+  private var snapshotId_ : String = "lts-8.0"
   private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
     new util.HashMap[String, java.util.Map[String, String]]()
   private var isExecutable_ : Boolean = false
