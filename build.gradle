@@ -2,10 +2,18 @@ buildscript {
     repositories {
         maven { url "http://dl.bintray.com/releashaus/release" }
         maven { url "https://oss.sonatype.org/content/groups/public" }
+        maven {
+            credentials {
+                username nexusUser
+                password nexusPassword
+            }
+            url "https://artifactory.prezi.com/plugins"
+        }
     }
 
     dependencies {
         classpath 'org.scoverage:gradle-scoverage:1.0.8'
+        classpath 'com.prezi.gradle:gradle-safe-publisher:1.+'
     }
 }
 
@@ -32,6 +40,7 @@ apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: org.scoverage.ScoveragePlugin
+apply plugin: 'safe-publisher'
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
