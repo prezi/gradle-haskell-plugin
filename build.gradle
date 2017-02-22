@@ -2,18 +2,22 @@ buildscript {
     repositories {
         maven { url "http://dl.bintray.com/releashaus/release" }
         maven { url "https://oss.sonatype.org/content/groups/public" }
-        maven {
-            credentials {
-                username nexusUser
-                password nexusPassword
+        if (!hasProperty("oss")) { // note that we cannot use project vars here
+            maven {
+                credentials {
+                    username nexusUser
+                    password nexusPassword
+                }
+                url "https://artifactory.prezi.com/plugins"
             }
-            url "https://artifactory.prezi.com/plugins"
         }
     }
 
     dependencies {
         classpath 'org.scoverage:gradle-scoverage:1.0.8'
-        classpath 'com.prezi.gradle:gradle-safe-publisher:1.+'
+        if (!hasProperty("oss")) {  // note that we cannot use project vars here
+            classpath 'com.prezi.gradle:gradle-safe-publisher:1.+'
+        }
     }
 }
 
@@ -36,17 +40,20 @@ task version << {
     println "Version: ${version}"
 }
 
+def ossRelease = hasProperty("oss")
+def signArtifacts = ossRelease || hasProperty("sign")
+
 apply plugin: 'scala'
 apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: org.scoverage.ScoveragePlugin
-apply plugin: 'safe-publisher'
+if (!ossRelease) {
+    apply plugin: 'safe-publisher'
+}
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 def scalaVersion = "2.11.8"
-def ossRelease = hasProperty("oss")
-def signArtifacts = ossRelease || hasProperty("sign")
 
 group = 'com.prezi.haskell'
 description = 'Gradle plugin for Haskell projects'
