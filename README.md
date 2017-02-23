@@ -86,15 +86,15 @@ It is possible to customize the *cabal flags* of dependencies installed by *stac
  ```
 
 ### Profiling
-_Profiling_ is enabled by default. To turn it off, change the `profiling` property of the `haskell` extension:
+_Profiling_ is disabled by default. To turn it on, change the `profiling` property of the `haskell` extension:
 
 ```groovy
 haskell {
-    profiling = false
+    profiling = true
 }
 ```
 
-or use the `-Pghc-disable-profiling` command line argument.
+or use the `-Pghc-enable-profiling` command line argument.
 
 ### GHC and cabal location
 

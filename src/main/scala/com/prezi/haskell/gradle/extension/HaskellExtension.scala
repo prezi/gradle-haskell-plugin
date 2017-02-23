@@ -15,7 +15,7 @@ import org.gradle.internal.reflect.Instantiator
   */
 class HaskellExtension(instantiator: Instantiator, project: Project) extends java.io.Serializable {
   private val sources_ : ProjectSourceSet = instantiator.newInstance(classOf[DefaultProjectSourceSet], instantiator)
-  private var profiling_ : Boolean = !project.hasProperty(PropertyKey.GhcDisableProfiling)
+  private var profiling_ : Boolean = project.hasProperty(PropertyKey.GhcEnableProfiling)
   private var ghcVersion_ : String = "ghc-8.0.2"
   private var snapshotId_ : String = "lts-8.0"
   private var packageFlags_ : java.util.Map[String, java.util.Map[String, String]] =
@@ -113,7 +113,7 @@ class HaskellExtension(instantiator: Instantiator, project: Project) extends jav
 object HaskellExtension {
 
   object PropertyKey {
-    val GhcDisableProfiling = "ghc-disable-profiling"
+    val GhcEnableProfiling = "ghc-enable-profiling"
     val SnapshotVersionsCacheDir = "snapshot-versions-dir"
     val StackRoot = "stack-root"
   }
